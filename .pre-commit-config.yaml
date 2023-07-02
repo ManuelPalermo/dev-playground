@@ -1,0 +1,62 @@
+repos:
+  # general hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: "v4.4.0"
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+      - id: detect-private-key
+      - id: check-executables-have-shebangs
+      - id: check-yaml
+      - id: check-xml
+      - id: check-json
+      - id: pretty-format-json
+
+  # cpp hooks
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: "v1.3.5"
+    hooks:
+      - id: clang-format
+        args: [--style=Google]
+      - id: clang-tidy
+      - id: include-what-you-use
+
+  # python hooks
+  - repo: https://github.com/psf/black
+    rev: "23.3.0"
+    hooks:
+      - id: black
+        args: ["--config", "pyproject.toml"]
+
+  - repo: https://github.com/PyCQA/isort
+    rev: "5.12.0"
+    hooks:
+      - id: isort
+        args: ["--settings-path", "pyproject.toml"]
+
+  - repo: https://github.com/PyCQA/pydocstyle
+    rev: "6.3.0"
+    hooks:
+      - id: pydocstyle
+        args: ["--config", "pyproject.toml"]
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: "6.0.0"
+    hooks:
+      - id: flake8
+        args: [--config, "setup.cfg"] # NOTE: flake8 refuses to support pyproject.toml :(
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: "v1.4.0"
+    hooks:
+      - id: mypy
+        args: ["--config", "pyproject.toml"]
+
+  - repo: https://github.com/pycqa/pylint
+    rev: "v3.0.0a6"
+    hooks:
+      - id: pylint
+        args: ["--rcfile", "pyproject.toml"]
