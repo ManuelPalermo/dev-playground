@@ -1,0 +1,68 @@
+{
+    "name": "devenv-${localEnv:USER}",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {
+            "USER": "${localEnv:USER}"
+        }
+    },
+    "containerEnv": {
+        "USER": "${localEnv:USER}",
+        "DISPLAY": "${localEnv:DISPLAY}",
+        "XAUTHORITY": "${localEnv:XAUTH}"
+    },
+    "remoteUser": "${localEnv:USER}",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/home/${localEnv:USER}/workspace,type=bind,consistency=cached",
+    "workspaceFolder": "/home/${localEnv:USER}/workspace",
+    "initializeCommand": "",
+    "onCreateCommand": "",
+    "updateContentCommand": "",
+    "postCreateCommand": ".devcontainer/postCreateCommand.sh",
+    "postStartCommand": "",
+    "runArgs": [
+        "--gpus=all",
+        "--network=host",
+        "--device=/dev/video0:/dev/video0"
+    ],
+    "mounts": [
+        // bind ssh keys from host
+        "source=${localEnv:HOME}/.ssh,target=/home/${localEnv:USER}/.ssh,type=bind",
+        // bind GUI from host
+        "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind",
+        "source=${localEnv:HOME}/.Xauthority,target=/home/${localEnv:USER}/.Xauthority,type=bind",
+        // bind camera from host
+        "source=/dev/video0,target=/dev/video0,type=bind"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "ms-vscode.cpptools",
+                "ms-vscode.cpptools-extension-pack",
+                "ms-vscode.cmake-tools",
+                "njpwerner.autodocstring",
+                "notskm.clang-tidy",
+                "xaver.clang-format",
+                "davidanson.vscode-markdownlint",
+                "timonwong.shellcheck",
+                "foxundermoon.shell-format",
+                "ms-azuretools.vscode-docker",
+                "cschlosser.doxdocgen",
+                "redhat.vscode-yaml",
+                "aaron-bond.better-comments",
+                "streetsidesoftware.code-spell-checker",
+                "mhutchie.git-graph",
+                "christian-kohler.path-intellisense",
+                "wmaurer.change-case",
+                "yo1dog.cursor-align",
+                "gruntfuggly.todo-tree",
+                "wayou.vscode-todo-highlight",
+                "ms-iot.vscode-ros",
+                "donjayamanne.githistory",
+                "eamodio.gitlens",
+                "xyz.local-history"
+            ]
+        }
+    }
+}

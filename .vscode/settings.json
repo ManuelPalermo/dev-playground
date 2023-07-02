@@ -1,0 +1,79 @@
+{
+    "editor.formatOnSave": true,
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4,
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": "active",
+    "editor.codeLens": true,
+    "editor.rulers": [
+        79,
+        99,
+        119
+    ],
+    "files.eol": "\n",
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true,
+    "terminal.integrated.scrollback": 20000,
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "terminal.integrated.profiles.linux": {
+        "bash": {
+            "path": "/usr/bin/bash"
+        },
+    },
+    // ---------------------- tool/language specific configs ------------------
+    // local history config
+    "local-history.daysLimit": 14,
+    "local-history.maxDisplay": 50,
+    // ---------- git ----------
+    "git-graph.maxDepthOfRepoSearch": 5,
+    "[git-commit]": {
+        "editor.rulers": [
+            50
+        ]
+    },
+    // ---------- python ----------
+    "python.defaultInterpreterPath": "/usr/bin/python3",
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.linting.pydocstyleEnabled": true,
+    "python.linting.mypyEnabled": true,
+    "python.linting.pylintPath": "/usr/bin/pylint",
+    "python.linting.flake8Path": "/usr/bin/flake8",
+    "python.linting.pydocstylePath": "/usr/bin/pydocstyle",
+    "python.linting.mypyPath": "/usr/bin/mypy",
+    "python.formatting.provider": "black",
+    "python.formatting.blackPath": "/usr/bin/black",
+    "python.sortImports.path": "/usr/bin/isort",
+    "python.linting.pylintArgs": [
+        "--line-length=120"
+    ],
+    "python.linting.flake8Args": [
+        "--line-length=120"
+    ],
+    "python.formatting.blackArgs": [
+        "--line-length=120"
+    ],
+    "python.sortImports.args": [
+        "--profile=black",
+        "--atomic",
+        "-rc"
+    ],
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    },
+    "autoDocstring.docstringFormat": "google",
+    "autoDocstring.generateDocstringOnEnter": true,
+    "autoDocstring.guessTypes": true,
+    // ---------- bash ---------
+    "shellformat.path": "/usr/bin/shfmt",
+    "shellformat.effectLanguages": [
+        "shellscript"
+    ],
+    // ---------- spell check ----------
+    "cSpell.diagnosticLevel": "Hint",
+    "cSpell.language": "en",
+    "cSpell.logLevel": "Information",
+    "python.analysis.typeCheckingMode": "basic"
+}
