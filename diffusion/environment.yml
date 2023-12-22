@@ -1,0 +1,16 @@
+name: env_ddpm
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pytorch=2.1.2=py3.11_cuda12.1_cudnn8.9.2_0
+  - pytorch-cuda=12.1
+  - torchvision=0.16.2=py311_cu121
+  - torchinfo
+  - matplotlib
+  - pip
+  - pip:
+      - einops
