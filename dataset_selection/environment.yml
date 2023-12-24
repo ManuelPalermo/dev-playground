@@ -1,4 +1,4 @@
-name: env_test
+name: env_data_select
 channels:
   - defaults
 dependencies:

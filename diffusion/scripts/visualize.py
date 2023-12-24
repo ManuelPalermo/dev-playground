@@ -1,25 +1,35 @@
 import matplotlib.pyplot as plt
 import torch
-from torchvision.utils import make_grid
-
-from ddpm.data_generator import get_dataloader, inverse_transform
+from ddpm.data_generator import get_dataloader
 from ddpm.diffusion import SimpleDiffusion
+from ddpm.utils import inverse_transform
+from torchvision.utils import make_grid
 
 
 def visualize_forward_diffusion(
     dataset_name: str = "custom",
     directory: str = "./data",
-    num_diffusion_timesteps: int = 1000,
+    num_diffusion_timesteps: int = 500,
     steps_to_vis: int = 15,
 ):
-
     # get a batch of samples
-    x0s = next(iter(get_dataloader(dataset_name=dataset_name, directory=directory, batch_size=16, shuffle=True)))[0]
+    x0s = next(
+        iter(
+            get_dataloader(
+                dataset_name=dataset_name,
+                directory=directory,
+                batch_size=16,
+                shuffle=True,
+            )[0]
+        )
+    )[0]
 
     sd = SimpleDiffusion(num_diffusion_timesteps=num_diffusion_timesteps, device="cpu")
 
     noisy_images = []
-    specific_timesteps = torch.linspace(0, num_diffusion_timesteps - 1, steps_to_vis, dtype=torch.long)
+    specific_timesteps = torch.linspace(
+        0, num_diffusion_timesteps - 1, steps_to_vis, dtype=torch.long
+    )
 
     for timestep in specific_timesteps:
         timestep = torch.as_tensor(timestep, dtype=torch.long)
@@ -43,9 +53,12 @@ def visualize_forward_diffusion(
     plt.show()
 
 
-def main():
-    visualize_forward_diffusion(dataset_name="Cifar-10", directory="./data/")
+def main(dataset_name, directory="./data/"):
+    visualize_forward_diffusion(
+        dataset_name=dataset_name,
+        directory=directory,
+    )
 
 
 if __name__ == "__main__":
-    main()
+    main(dataset_name="Cifar-10", directory="./data/")

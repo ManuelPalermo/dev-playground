@@ -11,6 +11,8 @@ dependencies:
   - torchvision=0.16.2=py311_cu121
   - torchinfo
   - matplotlib
+  - moviepy
   - pip
   - pip:
       - einops
+      - torcheval
