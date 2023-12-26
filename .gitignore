@@ -166,3 +166,5 @@ cython_debug/
 outputs/
 logs/
 */data/
+tmp/
+temp/
