@@ -1,0 +1,27 @@
+dataset:
+  name: "MNIST"
+  directory: "~/workspace/diffusion/data/"
+  shuffle: True
+  num_workers: 0
+  pin_memory: False
+
+diffusion:
+  num_steps: 1000
+  noise_schedule: "linear"
+
+model:
+  class_cond: True
+  unet_hidden_dims: [32, 64, 128, 256]
+  ema_decay: 0.999
+
+experiment:
+  data_shape: [1, 28, 28]
+  num_epochs: 26
+  batch_size: 64
+  optim_lr: 0.0002
+  lr_schedule_mult: 1.0 # 1.0 effectively ignores schedule
+  device: "cuda"
+  dtype: "float32" # NOTE: bfloat16 is possible and faster on Ampere+ GPUs, but results are not stable for some reason
+  eval_interval: 5
+  eval_dir: ./MNIST/reverse_diffusion
+  checkpoints_dir: ./MNIST/checkpoints

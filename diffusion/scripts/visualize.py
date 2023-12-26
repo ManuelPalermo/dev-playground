@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import torch
 from ddpm.data_generator import get_dataloader
-from ddpm.diffusion import SimpleDiffusion
+from ddpm.diffusion import GaussianDiffusion
 from ddpm.utils import inverse_transform
 from torchvision.utils import make_grid
 
@@ -24,7 +24,9 @@ def visualize_forward_diffusion(
         )
     )[0]
 
-    sd = SimpleDiffusion(num_diffusion_timesteps=num_diffusion_timesteps, device="cpu")
+    diffusion = GaussianDiffusion(
+        num_diffusion_timesteps=num_diffusion_timesteps, device="cpu"
+    )
 
     noisy_images = []
     specific_timesteps = torch.linspace(
@@ -34,7 +36,7 @@ def visualize_forward_diffusion(
     for timestep in specific_timesteps:
         timestep = torch.as_tensor(timestep, dtype=torch.long)
 
-        xts, _ = sd.forward_diffusion(x0s, timestep)
+        xts, _ = diffusion.forward_diffusion(x0s, timestep)
         xts = inverse_transform(xts, max_val=1.0)
         xts = make_grid(xts, nrow=1, padding=1)
 

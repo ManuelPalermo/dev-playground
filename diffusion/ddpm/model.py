@@ -314,7 +314,7 @@ class UNet(nn.Module):
         if self.num_classes > 1:
             # add class information to embeddings
             cls = cls.to(dtype=torch.long, device=sample.device)
-            t_emb = t_emb + self.class_embedding(cls).to(dtype=sample.dtype)
+            t_emb = t_emb + self.class_embedding(cls).to(dtype=t_emb.dtype)
 
         x = self.init_conv(sample)
         r = x.clone()

@@ -7,29 +7,37 @@ from torchvision.io import ImageReadMode, read_image
 from torchvision.transforms import v2 as transforms_v2
 
 
-class CustomDataset(Dataset):
-    def __init__(self, root: str, transforms):
-        image_paths = [
-            file
-            for file in os.listdir(root)
-            if file.endswith(".png") or file.endswith(".jpeg")
-        ]
-        self.image_paths = image_paths
-        self.transforms = transforms
+class CacheRepeatDataset(Dataset):
+    # cache a maximum of 128 images
+    CACHE_SIZE: int = 512
+
+    def __init__(self, dataset: Dataset, repeat_num: int = 1):
+        self.dataset = dataset
+        self.repeat_num = repeat_num
+
+        assert (
+            len(self.dataset) < CacheRepeatDataset.CACHE_SIZE
+        ), "With this many images you prob will get issues with caching."
+
+        self._cache: dict[int, torch.Tensor] = {}
 
     def __len__(self):
-        return len(self.image_paths)
+        return len(self.dataset) * self.repeat_num
 
     def __getitem__(self, idx: int):
-        image_path = self.image_paths[idx]
-        image = read_image(image_path, mode=ImageReadMode.RGB)
-        image = self.transforms(image)
-        label = torch.zeros(0)  # dummy label to comply with interface
-        return image, label
+        # convert repeated idx to actual dataset idx
+        orig_idx = idx % len(self.dataset)
+
+        if orig_idx in self._cache:
+            return self._cache[orig_idx]  # sample from cache
+        else:
+            sample = self.dataset.__getitem__(orig_idx)  # sample for original dataset
+            self._cache[orig_idx] = sample  # cache sample for original dataset
+            return sample
 
 
 def get_dataset(
-    dataset_name="custom", directory: str = "./data", shape: tuple[int, ...] = (32, 32)
+    dataset_name="MNIST", directory: str = "./data", shape: tuple[int, ...] = (28, 28)
 ) -> tuple[Dataset, int]:
     transforms = transforms_v2.Compose(
         [
@@ -65,12 +73,13 @@ def get_dataset(
         )
         num_classes = 100
 
-    # elif dataset_name == "Flowers":
-    #    dataset = datasets.ImageFolder(root=dataset_root, transform=transforms)
+    elif dataset_name == "ImageFolder" or dataset_name == "ImageFolder_overfit":
+        dataset = datasets.ImageFolder(root=directory, transform=transforms)
+        num_classes = len(dataset.classes)
 
-    elif dataset_name == "custom":
-        dataset = CustomDataset(root=dataset_root, transforms=transforms)
-        num_classes = 1
+        if dataset_name == "ImageFolder_overfit":
+            # if you want to overfit on a small dataset (just cache samples and repeat idx to balance epoch logic)
+            dataset = CacheRepeatDataset(dataset=dataset, repeat_num=2000)
 
     else:
         raise NotImplementedError(f"Unknown dataset name: {dataset_name}")
@@ -79,9 +88,9 @@ def get_dataset(
 
 
 def get_dataloader(
-    dataset_name="custom",
+    dataset_name="MNIST",
     directory: str = "./data",
-    data_shape: tuple[int, ...] = (3, 32, 32),
+    data_shape: tuple[int, ...] = (1, 28, 28),
     batch_size: int = 32,
     pin_memory: bool = False,
     shuffle: bool = True,
