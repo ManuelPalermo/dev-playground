@@ -24,14 +24,10 @@ def visualize_forward_diffusion(
         )
     )[0]
 
-    diffusion = GaussianDiffusion(
-        num_diffusion_timesteps=num_diffusion_timesteps, device="cpu"
-    )
+    diffusion = GaussianDiffusion(num_diffusion_timesteps=num_diffusion_timesteps, device="cpu")
 
     noisy_images = []
-    specific_timesteps = torch.linspace(
-        0, num_diffusion_timesteps - 1, steps_to_vis, dtype=torch.long
-    )
+    specific_timesteps = torch.linspace(0, num_diffusion_timesteps - 1, steps_to_vis, dtype=torch.long)
 
     for timestep in specific_timesteps:
         timestep = torch.as_tensor(timestep, dtype=torch.long)

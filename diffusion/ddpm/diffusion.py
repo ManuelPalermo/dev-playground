@@ -47,9 +47,7 @@ class GaussianDiffusion:
             max_beta = torch.tensor(0.999)
             alpha_bar = lambda t: torch.cos((t + 0.008) / 1.008 * torch.pi / 2) ** 2
 
-            ts = torch.arange(
-                0, self.num_diffusion_timesteps, device=self.device, dtype=self.dtype
-            )
+            ts = torch.arange(0, self.num_diffusion_timesteps, device=self.device, dtype=self.dtype)
             t1 = ts / self.num_diffusion_timesteps
             t2 = (ts + 1) / self.num_diffusion_timesteps
             betas = torch.minimum(1 - alpha_bar(t2) / alpha_bar(t1), max_beta)
@@ -73,8 +71,6 @@ class GaussianDiffusion:
         eps = torch.randn_like(x0)  # Noise
 
         mean = self.sqrt_alpha_cumulative[ts].view(view_shape).expand_as(x0) * x0
-        std_dev = (
-            self.sqrt_one_minus_alpha_cumulative[ts].view(view_shape).expand_as(x0)
-        )
+        std_dev = self.sqrt_one_minus_alpha_cumulative[ts].view(view_shape).expand_as(x0)
         sample = mean + std_dev * eps  # scaled inputs * scaled noise
         return sample, eps

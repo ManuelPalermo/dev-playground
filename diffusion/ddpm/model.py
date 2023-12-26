@@ -27,7 +27,7 @@ class LayerNorm(nn.Module):
 class LinearAttention(nn.Module):
     def __init__(self, dim, heads=4, dim_head=32):
         super().__init__()
-        self.scale = dim_head**-0.5
+        self.scale = dim_head ** -0.5
         self.heads = heads
         hidden_dim = dim_head * heads
         self.to_qkv = nn.Conv2d(dim, hidden_dim * 3, 1, bias=False)
@@ -37,9 +37,7 @@ class LinearAttention(nn.Module):
     def forward(self, x):
         b, c, h, w = x.shape
         qkv = self.to_qkv(x).chunk(3, dim=1)
-        q, k, v = map(
-            lambda t: rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads), qkv
-        )
+        q, k, v = map(lambda t: rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads), qkv)
 
         q = q.softmax(dim=-2)
         k = k.softmax(dim=-1)
@@ -57,7 +55,7 @@ class LinearAttention(nn.Module):
 class Attention(nn.Module):
     def __init__(self, dim, heads=4, dim_head=32):
         super().__init__()
-        self.scale = dim_head**-0.5
+        self.scale = dim_head ** -0.5
         self.heads = heads
         hidden_dim = dim_head * heads
 
@@ -67,9 +65,7 @@ class Attention(nn.Module):
     def forward(self, x):
         b, c, h, w = x.shape
         qkv = self.to_qkv(x).chunk(3, dim=1)
-        q, k, v = map(
-            lambda t: rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads), qkv
-        )
+        q, k, v = map(lambda t: rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads), qkv)
 
         q = q * self.scale
 
@@ -112,9 +108,7 @@ def get_upsample_layer(in_dim, hidden_dim, is_last):
 
 def sinusoidal_embedding(timesteps, dim):
     half_dim = dim // 2
-    exponent = -math.log(10000) * torch.arange(
-        start=0, end=half_dim, dtype=torch.float32
-    )
+    exponent = -math.log(10000) * torch.arange(start=0, end=half_dim, dtype=torch.float32)
     exponent = exponent / (half_dim - 1.0)
 
     emb = torch.exp(exponent).to(device=timesteps.device)
@@ -159,9 +153,7 @@ class ResidualBlock(nn.Module):
         self.in_channels = in_channels
         self.out_channels = out_channels
 
-        self.time_emb_proj = nn.Sequential(
-            nn.SiLU(), torch.nn.Linear(temb_channels, out_channels)
-        )
+        self.time_emb_proj = nn.Sequential(nn.SiLU(), torch.nn.Linear(temb_channels, out_channels))
 
         self.residual_conv = (
             nn.Conv2d(in_channels, out_channels=out_channels, kernel_size=1)
@@ -234,13 +226,9 @@ class UNet(nn.Module):
             nn.Linear(time_embed_dim, time_embed_dim),
         )
 
-        self.class_embedding = torch.nn.Embedding(
-            num_embeddings=num_classes, embedding_dim=time_embed_dim
-        )
+        self.class_embedding = torch.nn.Embedding(num_embeddings=num_classes, embedding_dim=time_embed_dim)
 
-        self.init_conv = nn.Conv2d(
-            in_channels, out_channels=hidden_dims[0], kernel_size=3, stride=1, padding=1
-        )
+        self.init_conv = nn.Conv2d(in_channels, out_channels=hidden_dims[0], kernel_size=3, stride=1, padding=1)
 
         down_blocks = []
 
@@ -262,13 +250,9 @@ class UNet(nn.Module):
         self.down_blocks = nn.ModuleList(down_blocks)
 
         mid_dim = hidden_dims[-1]
-        self.mid_block1 = ResidualBlock(
-            mid_dim, mid_dim, time_embed_dim, dropout=dropout
-        )
+        self.mid_block1 = ResidualBlock(mid_dim, mid_dim, time_embed_dim, dropout=dropout)
         self.mid_attn = Residual(PreNorm(mid_dim, Attention(mid_dim)))
-        self.mid_block2 = ResidualBlock(
-            mid_dim, mid_dim, time_embed_dim, dropout=dropout
-        )
+        self.mid_block2 = ResidualBlock(mid_dim, mid_dim, time_embed_dim, dropout=dropout)
 
         up_blocks = []
         in_dim = mid_dim
@@ -277,12 +261,8 @@ class UNet(nn.Module):
             up_blocks.append(
                 nn.ModuleList(
                     [
-                        ResidualBlock(
-                            in_dim + hidden_dim, in_dim, time_embed_dim, dropout=dropout
-                        ),
-                        ResidualBlock(
-                            in_dim + hidden_dim, in_dim, time_embed_dim, dropout=dropout
-                        ),
+                        ResidualBlock(in_dim + hidden_dim, in_dim, time_embed_dim, dropout=dropout),
+                        ResidualBlock(in_dim + hidden_dim, in_dim, time_embed_dim, dropout=dropout),
                         get_attn_layer(in_dim, is_last, use_linear_attn),
                         get_upsample_layer(in_dim, hidden_dim, is_last),
                     ]
@@ -292,18 +272,12 @@ class UNet(nn.Module):
 
         self.up_blocks = nn.ModuleList(up_blocks)
 
-        self.out_block = ResidualBlock(
-            hidden_dims[0] * 2, hidden_dims[0], time_embed_dim, dropout=dropout
-        )
-        self.conv_out = nn.Conv2d(
-            hidden_dims[0], out_channels=in_channels, kernel_size=1
-        )
+        self.out_block = ResidualBlock(hidden_dims[0] * 2, hidden_dims[0], time_embed_dim, dropout=dropout)
+        self.conv_out = nn.Conv2d(hidden_dims[0], out_channels=in_channels, kernel_size=1)
 
     def forward(self, sample, timesteps, cls):
         if not torch.is_tensor(timesteps):
-            timesteps = torch.tensor(
-                [timesteps], dtype=torch.long, device=sample.device
-            )
+            timesteps = torch.tensor([timesteps], dtype=torch.long, device=sample.device)
 
         timesteps = torch.flatten(timesteps)
         timesteps = timesteps.broadcast_to(sample.shape[0])

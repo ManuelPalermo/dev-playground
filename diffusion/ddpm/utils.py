@@ -30,13 +30,9 @@ def prepare_vis_frames(frames: torch.Tensor, nrow: Optional[int] = 10) -> np.nda
     frames_gen_vis = inverse_transform(torch.nan_to_num(frames), max_val=255.0)
 
     if nrow is not None:
-        frames_gen_vis = torch.permute(
-            make_grid(frames_gen_vis, nrow=nrow), dims=(1, 2, 0)
-        )  # GW x GH x C
+        frames_gen_vis = torch.permute(make_grid(frames_gen_vis, nrow=nrow), dims=(1, 2, 0))  # GW x GH x C
     else:
-        frames_gen_vis = torch.permute(
-            frames_gen_vis, dims=(0, 2, 3, 1)
-        )  # B x W x H x C
+        frames_gen_vis = torch.permute(frames_gen_vis, dims=(0, 2, 3, 1))  # B x W x H x C
 
     return frames_gen_vis.to(torch.uint8).to("cpu").numpy()
 
@@ -60,9 +56,7 @@ def compute_fid_metric(
 
     is_rgb = frames_gen.shape[1] == 3
     if is_rgb:
-        frames_gt = collect_n_samples_from_dataloader(
-            dataloader=dataloader, num=len(frames_gen)
-        )
+        frames_gt = collect_n_samples_from_dataloader(dataloader=dataloader, num=len(frames_gen))
 
         fid_metric = FrechetInceptionDistance(device="cpu")
         fid_metric.update(images=prepare_fid_frames(frames_gt), is_real=True)
@@ -83,9 +77,7 @@ def log_generation_examples(
     num_classes: int,
 ) -> None:
     # prepare generated frames to be visualized
-    frames_grid_gen_vis = [
-        prepare_vis_frames(frames_gen, nrow=10) for frames_gen in frames_steps
-    ]
+    frames_grid_gen_vis = [prepare_vis_frames(frames_gen, nrow=10) for frames_gen in frames_steps]
 
     # save final denoised frames
     plt.imsave(
@@ -116,9 +108,7 @@ def log_generation_examples(
         ax[i].grid(False)
     fig.suptitle("Reverse Diffusion Process", y=0.98)
     fig.tight_layout()
-    fig.savefig(
-        fname=os.path.join(eval_examples_dir, f"frames_{epoch}_reverse_diff.png")
-    )
+    fig.savefig(fname=os.path.join(eval_examples_dir, f"frames_{epoch}_reverse_diff.png"))
 
     # save gif with reverse diffusion
     gif_name = f"frames_{epoch}_reverse_diff.gif"
@@ -136,13 +126,9 @@ def log_forward_diffusion_examples(
     steps_to_vis: int = 15,
 ) -> None:
     # get a batch of samples
-    frames_gt = collect_n_samples_from_dataloader(
-        dataloader=dataloader, num=num_samples
-    )
+    frames_gt = collect_n_samples_from_dataloader(dataloader=dataloader, num=num_samples)
 
-    specific_timesteps = torch.linspace(
-        0, num_diffusion_timesteps - 1, steps_to_vis, dtype=torch.long
-    )
+    specific_timesteps = torch.linspace(0, num_diffusion_timesteps - 1, steps_to_vis, dtype=torch.long)
 
     noisy_images: list[torch.Tensor] = []
 
@@ -152,9 +138,7 @@ def log_forward_diffusion_examples(
 
         noisy_images.append(xts.to("cpu"))
 
-    frames_gt_vis = [
-        prepare_vis_frames(frames_gt, nrow=1) for frames_gt in noisy_images
-    ]
+    frames_gt_vis = [prepare_vis_frames(frames_gt, nrow=1) for frames_gt in noisy_images]
 
     fig, ax = plt.subplots(1, len(frames_gt_vis), figsize=(10, 5), facecolor="white")
     for i, (timestep, sample) in enumerate(zip(specific_timesteps, frames_gt_vis)):

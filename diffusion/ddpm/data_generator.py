@@ -56,21 +56,15 @@ def get_dataset(
     dataset_root = os.path.join(directory, dataset_name)
 
     if dataset_name.upper() == "MNIST":
-        dataset = datasets.MNIST(
-            root=dataset_root, train=True, download=True, transform=transforms
-        )
+        dataset = datasets.MNIST(root=dataset_root, train=True, download=True, transform=transforms)
         num_classes = 10
 
     elif dataset_name == "Cifar-10":
-        dataset = datasets.CIFAR10(
-            root=dataset_root, train=True, download=True, transform=transforms
-        )
+        dataset = datasets.CIFAR10(root=dataset_root, train=True, download=True, transform=transforms)
         num_classes = 10
 
     elif dataset_name == "Cifar-100":
-        dataset = datasets.CIFAR10(
-            root=dataset_root, train=True, download=True, transform=transforms
-        )
+        dataset = datasets.CIFAR10(root=dataset_root, train=True, download=True, transform=transforms)
         num_classes = 100
 
     elif dataset_name == "ImageFolder" or dataset_name == "ImageFolder_overfit":

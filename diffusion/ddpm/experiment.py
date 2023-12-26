@@ -78,9 +78,7 @@ class DiffusionExperiment:
         fid_score_list: list[float] = []
         for epoch in range(num_epochs):
             # Train
-            tq = tqdm(
-                total=len(dataloader), desc=f"Train :: Epoch: {epoch}/{num_epochs-1}"
-            )
+            tq = tqdm(total=len(dataloader), desc=f"Train :: Epoch: {epoch}/{num_epochs-1}")
             epochs_loss = self.train_epoch(dataloader=dataloader)
             tq.set_postfix_str(s=f"Epoch Loss: {epochs_loss:.4f}")
 
@@ -93,16 +91,12 @@ class DiffusionExperiment:
                     "opt": self.optimizer.state_dict(),
                 }
                 if self.ema_decay is not None:
-                    torch.optim.swa_utils.update_bn(
-                        dataloader, self.ema_model, device=self.device
-                    )
+                    torch.optim.swa_utils.update_bn(dataloader, self.ema_model, device=self.device)
                     checkpoint_dict["model_ema"] = self.ema_model.state_dict()
 
                 torch.save(
                     checkpoint_dict,
-                    os.path.join(
-                        checkpoints_dir, f"ckpt_{epoch}_{epochs_loss:.03f}.pt"
-                    ),
+                    os.path.join(checkpoints_dir, f"ckpt_{epoch}_{epochs_loss:.03f}.pt"),
                 )
 
                 # create grid of example reverse diffusion steps
@@ -113,9 +107,7 @@ class DiffusionExperiment:
                 )
 
                 # try to calculate fid score
-                fid_score = compute_fid_metric(
-                    frames_gen=frames_steps_gen[-1], dataloader=dataloader
-                )
+                fid_score = compute_fid_metric(frames_gen=frames_steps_gen[-1], dataloader=dataloader)
 
                 # log some generated samples
                 log_generation_examples(
@@ -222,20 +214,13 @@ class DiffusionExperiment:
             B, *rest = predicted_noise.shape
             view_shape = (B, *[1 for _ in rest])
             beta_t = self.diffusion.beta[ts].view(view_shape).expand_as(predicted_noise)
-            one_by_sqrt_alpha_t = (
-                self.diffusion.one_by_sqrt_alpha[ts]
-                .view(view_shape)
-                .expand_as(predicted_noise)
-            )
+            one_by_sqrt_alpha_t = self.diffusion.one_by_sqrt_alpha[ts].view(view_shape).expand_as(predicted_noise)
             sqrt_one_minus_alpha_cumulative_t = (
-                self.diffusion.sqrt_one_minus_alpha_cumulative[ts]
-                .view(view_shape)
-                .expand_as(predicted_noise)
+                self.diffusion.sqrt_one_minus_alpha_cumulative[ts].view(view_shape).expand_as(predicted_noise)
             )
 
             x = (
-                one_by_sqrt_alpha_t
-                * (x - (beta_t / sqrt_one_minus_alpha_cumulative_t) * predicted_noise)
+                one_by_sqrt_alpha_t * (x - (beta_t / sqrt_one_minus_alpha_cumulative_t) * predicted_noise)
                 + torch.sqrt(beta_t) * z
             )
 
