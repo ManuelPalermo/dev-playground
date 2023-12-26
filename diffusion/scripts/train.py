@@ -17,6 +17,7 @@ def main(cfg: DictConfig) -> None:
     dataloader, num_classes = get_dataloader(
         dataset_name=cfg.dataset.name,
         directory=cfg.dataset.directory,
+        data_shape=cfg.experiment.data_shape,
         batch_size=cfg.experiment.batch_size,
         shuffle=cfg.dataset.shuffle,
         num_workers=cfg.dataset.num_workers,

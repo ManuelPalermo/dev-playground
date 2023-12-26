@@ -3,12 +3,14 @@ channels:
   - pytorch
   - nvidia
   - conda-forge
+  - pyg
   - defaults
 dependencies:
-  - python=3.11
-  - pytorch=2.1.2=py3.11_cuda12.1_cudnn8.9.2_0
+  - python=3.10
+  - pytorch=2.1.0=py3.10_cuda12.1_cudnn8.9.2_0
   - pytorch-cuda=12.1
-  - torchvision=0.16.2=py311_cu121
+  - torchvision=0.16.0=py310_cu121
+  - pyg=2.4.0=py310_torch_2.1.0_cu121
   - torchinfo
   - matplotlib
   - moviepy
@@ -16,3 +18,4 @@ dependencies:
   - pip:
       - einops
       - torcheval
+      - hydra-core

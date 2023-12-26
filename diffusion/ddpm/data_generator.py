@@ -1,10 +1,25 @@
 import os
 
 import torch
-import torchvision.datasets as datasets
+import torch_geometric.transforms as transforms_3d
+import torchvision.datasets as datasets_image
 from torch.utils.data import DataLoader, Dataset
-from torchvision.io import ImageReadMode, read_image
+from torch_geometric import datasets as datasets_3d
 from torchvision.transforms import v2 as transforms_v2
+
+IMAGE_DATASETS = (
+    "MNIST",
+    "Cifar-10",
+    "Cifar-100",
+    "ImageFolder",
+    "ImageFolder_overfit",
+)
+
+POINT_DATASETS = (
+    "ModelNet10",
+    "ModelNet40",
+    "ShapeNet",
+)
 
 
 class CacheRepeatDataset(Dataset):
@@ -36,7 +51,7 @@ class CacheRepeatDataset(Dataset):
             return sample
 
 
-def get_dataset(
+def get_dataset_image(
     dataset_name="MNIST", directory: str = "./data", shape: tuple[int, ...] = (28, 28)
 ) -> tuple[Dataset, int]:
     transforms = transforms_v2.Compose(
@@ -55,20 +70,20 @@ def get_dataset(
 
     dataset_root = os.path.join(directory, dataset_name)
 
-    if dataset_name.upper() == "MNIST":
-        dataset = datasets.MNIST(root=dataset_root, train=True, download=True, transform=transforms)
+    if dataset_name == "MNIST":
+        dataset = datasets_image.MNIST(root=dataset_root, train=True, download=True, transform=transforms)
         num_classes = 10
 
     elif dataset_name == "Cifar-10":
-        dataset = datasets.CIFAR10(root=dataset_root, train=True, download=True, transform=transforms)
+        dataset = datasets_image.CIFAR10(root=dataset_root, train=True, download=True, transform=transforms)
         num_classes = 10
 
     elif dataset_name == "Cifar-100":
-        dataset = datasets.CIFAR10(root=dataset_root, train=True, download=True, transform=transforms)
+        dataset = datasets_image.CIFAR10(root=dataset_root, train=True, download=True, transform=transforms)
         num_classes = 100
 
     elif dataset_name == "ImageFolder" or dataset_name == "ImageFolder_overfit":
-        dataset = datasets.ImageFolder(root=directory, transform=transforms)
+        dataset = datasets_image.ImageFolder(root=directory, transform=transforms)
         num_classes = len(dataset.classes)
 
         if dataset_name == "ImageFolder_overfit":
@@ -81,6 +96,36 @@ def get_dataset(
     return dataset, num_classes
 
 
+def get_dataset_points(
+    dataset_name="ModelNet10", directory: str = "./data", shape: tuple[int, ...] = (3000,)
+) -> tuple[Dataset, int]:
+    dataset_root = os.path.join(directory, dataset_name)
+
+    # op to pad number of points to max
+    pad_fn = lambda p: torch.nn.functional.pad(p, pad=(0, 0, 0, shape[0] - p.shape[0]), value=0.0)
+
+    if dataset_name == "ModelNet10":
+        transforms = transforms_3d.Compose([lambda data: (pad_fn(data.pos), data.y)])
+        dataset = datasets_3d.ModelNet(root=dataset_root, name="10", train=True, transform=transforms)
+        num_classes = 10
+
+    elif dataset_name == "ModelNet40":
+        transforms = transforms_3d.Compose([lambda data: (pad_fn(data.pos), data.y)])
+        dataset = datasets_3d.ModelNet(root=dataset_root, name="40", train=True, transform=transforms)
+        num_classes = 40
+
+    elif dataset_name == "ShapeNet":
+        transforms = transforms_3d.Compose([lambda data: (pad_fn(data.pos), data.category)])
+        dataset = datasets_3d.ShapeNet(root=dataset_root, categories=None, include_normals=False, transform=transforms)
+        num_classes = dataset.num_classes
+
+    else:
+        raise NotImplementedError(f"Unknown dataset name: {dataset_name}")
+
+    # image: (32, 32, 3) -> vis: (302, 32, 3)
+    return dataset, num_classes
+
+
 def get_dataloader(
     dataset_name="MNIST",
     directory: str = "./data",
@@ -89,8 +134,17 @@ def get_dataloader(
     pin_memory: bool = False,
     shuffle: bool = True,
     num_workers: int = 0,
-) -> tuple[Dataset, int]:
-    dataset, num_classes = get_dataset(dataset_name, directory, shape=data_shape[1:])
+) -> tuple[DataLoader, int]:
+    if dataset_name in IMAGE_DATASETS:
+        dataset, num_classes = get_dataset_image(dataset_name, directory, shape=data_shape[1:])
+    elif dataset_name in POINT_DATASETS:
+        dataset, num_classes = get_dataset_points(dataset_name, directory, shape=data_shape[1:])
+    else:
+        raise NotImplementedError(
+            f"Unknown dataset name: {dataset_name}. Available ones are:"
+            f"\n - IMAGE_DATASETS: {IMAGE_DATASETS}"
+            f"\n - POINT_DATASETS: {POINT_DATASETS}"
+        )
 
     dataloader = DataLoader(
         dataset,
