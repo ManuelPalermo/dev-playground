@@ -1,5 +1,4 @@
 from os import path
-import itertools
 
 from setuptools import setup
 
