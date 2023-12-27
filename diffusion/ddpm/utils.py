@@ -1,3 +1,5 @@
+"""Utility functions to process, visualize and log data."""
+
 import os
 import shutil
 from typing import Optional
@@ -38,7 +40,6 @@ def project_pointcloud_to_bev_image(
     pcs: torch.Tensor, res: float = 0.01, space_m: tuple[float, ...] = (-0.6, 0.6)
 ) -> torch.Tensor:
     """Projects pointcloud xyz to BeV image."""
-
     # TODO: fix viz for ModelNet (no idea what shape is stuff comming)
     B, C, _ = pcs.shape
 
@@ -88,6 +89,7 @@ def project_pointcloud_to_bev_image(
 
 
 def prepare_vis_frames(frames: torch.Tensor, nrow: Optional[int] = 10, data_type: str = "img") -> np.ndarray:
+    """Prepares torch frames for visualization."""
     if data_type == "pcd":
         frames = project_pointcloud_to_bev_image(frames)
 
@@ -104,6 +106,7 @@ def prepare_vis_frames(frames: torch.Tensor, nrow: Optional[int] = 10, data_type
 
 
 def collect_n_samples_from_dataloader(dataloader: DataLoader, num: int) -> torch.Tensor:
+    """Collects desired number of samples from dataloader."""
     frames_gt = []
     n_to_sample = np.ceil(num / dataloader.batch_size)
     for idx, (x0s, _) in enumerate(dataloader):
@@ -116,7 +119,6 @@ def collect_n_samples_from_dataloader(dataloader: DataLoader, num: int) -> torch
 
 def compute_fid_metric(frames_gen: torch.Tensor, dataloader: DataLoader) -> float:
     """Calculate FID metric from generated frames + sampled gt from a dataloader."""
-
     is_rgb = frames_gen.shape[1] == 3
     if is_rgb:
         frames_gt = collect_n_samples_from_dataloader(dataloader=dataloader, num=len(frames_gen))
@@ -140,6 +142,7 @@ def log_generation_examples(
     num_classes: int,
     data_type: str,
 ) -> None:
+    """Visualizes frames from reverse diffusion and saves some timesteps for visualization."""
     # prepare generated frames to be visualized
     frames_grid_gen_vis = [prepare_vis_frames(frames_gen, nrow=10, data_type=data_type) for frames_gen in frames_steps]
 
@@ -189,6 +192,7 @@ def log_forward_diffusion_examples(
     steps_to_vis: int = 15,
     data_type: str = "img",
 ) -> None:
+    """Performs forward diffusion on samples from dataloader and saves given timesteps for visualization."""
     # get a batch of samples
     frames_gt = collect_n_samples_from_dataloader(dataloader=dataloader, num=num_samples)
 

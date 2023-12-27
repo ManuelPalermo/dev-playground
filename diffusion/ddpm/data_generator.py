@@ -1,3 +1,5 @@
+"""Dataloader and dataset utilities, supports 2D image and 3D pointcloud data."""
+
 import os
 
 import torch
@@ -23,10 +25,18 @@ POINT_DATASETS = (
 
 
 class CacheRepeatDataset(Dataset):
+    """Wraps a pytorch dataset to enable caching and sampling repeated times."""
+
     # cache a maximum of 128 images
     CACHE_SIZE: int = 512
 
     def __init__(self, dataset: Dataset, repeat_num: int = 1):
+        """Constructor.
+
+        Args:
+            dataset: pytorch dataset
+            repeat_num: number of times to repeat samples.
+        """
         self.dataset = dataset
         self.repeat_num = repeat_num
 
@@ -37,9 +47,11 @@ class CacheRepeatDataset(Dataset):
         self._cache: dict[int, torch.Tensor] = {}
 
     def __len__(self):
+        """Number of samples in the dataset."""
         return len(self.dataset) * self.repeat_num
 
     def __getitem__(self, idx: int):
+        """Function to sample from the dataset at a given idx."""
         # convert repeated idx to actual dataset idx
         orig_idx = idx % len(self.dataset)
 
@@ -54,6 +66,7 @@ class CacheRepeatDataset(Dataset):
 def get_dataset_image(
     dataset_name="MNIST", directory: str = "./data", shape: tuple[int, ...] = (28, 28)
 ) -> tuple[Dataset, int]:
+    """Creates a pytorch dataset from 2D iamge data."""
     transforms = transforms_v2.Compose(
         [
             transforms_v2.ToImage(),
@@ -99,6 +112,7 @@ def get_dataset_image(
 def get_dataset_points(
     dataset_name: str = "ShapeNet", directory: str = "./data", shape: tuple[int, ...] = (3000,)
 ) -> tuple[Dataset, int]:
+    """Creates a pytorch dataset with 3D pointcloud data."""
     dataset_root = os.path.join(directory, dataset_name)
 
     # op to pad number of points to max
@@ -137,6 +151,7 @@ def get_dataloader(
     shuffle: bool = True,
     num_workers: int = 0,
 ) -> tuple[DataLoader, int]:
+    """Creates pytorch dataloader."""
     if dataset_name in IMAGE_DATASETS:
         dataset, num_classes = get_dataset_image(dataset_name, directory, shape=data_shape[1:])
     elif dataset_name in POINT_DATASETS:

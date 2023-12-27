@@ -2,6 +2,8 @@ import torch
 
 
 class GaussianDiffusion:
+    """Applies gaussian diffusion to samples."""
+
     def __init__(
         self,
         num_diffusion_timesteps=1000,
@@ -11,17 +13,18 @@ class GaussianDiffusion:
         device="cpu",
         dtype=torch.float32,
     ):
+        """Constructor."""
         self.num_diffusion_timesteps = num_diffusion_timesteps
         self.schedule = schedule
         self.beta_1 = beta_1
         self.beta_T = beta_T
         self.device = device
         self.dtype = dtype
-        self.initialize()
+        self._initialize()
 
-    def initialize(self):
-        # BETAs & ALPHAs required at different places in the Algorithm.
-        self.beta = self.get_betas()
+    def _initialize(self):
+        """Create BETAs & ALPHAs required at different places in the Algorithm."""
+        self.beta = self._get_betas()
         self.alpha = 1 - self.beta
 
         self.sqrt_beta = torch.sqrt(self.beta)
@@ -30,7 +33,7 @@ class GaussianDiffusion:
         self.one_by_sqrt_alpha = 1.0 / torch.sqrt(self.alpha)
         self.sqrt_one_minus_alpha_cumulative = torch.sqrt(1 - self.alpha_cumulative)
 
-    def get_betas(self):
+    def _get_betas(self):
         """Creates betas given th specified noise schedule."""
         if self.schedule == "linear":
             # Linear schedule from Ho et al, extended to work for any number of diffusion steps.
@@ -61,6 +64,12 @@ class GaussianDiffusion:
             raise NotImplementedError(f"Unknown noise schedule: {self.schedule}")
 
     def forward_diffusion(self, x0: torch.Tensor, timesteps: torch.Tensor):
+        """Performs forward diffusion, returning corrupted samples and noise applied at a given timestep.
+
+        Args:
+            x0: initial images.
+            timesteps: Either a single timestep of vector of timesteps for each image.
+        """
         # some shape magic to deal with one or vector of timesteps
 
         x0 = x0.to(self.device)

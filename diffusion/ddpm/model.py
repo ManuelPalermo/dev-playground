@@ -5,7 +5,6 @@ import torch.nn.functional as F
 from einops import rearrange
 from einops.layers.torch import Rearrange
 from torch import einsum, nn
-from torch.nn import functional as F
 
 
 def l2norm(t):
@@ -138,6 +137,8 @@ class PreNorm(nn.Module):
 
 
 class ResidualBlock(nn.Module):
+    """ResNet block, supporting additional embeddings."""
+
     def __init__(
         self,
         in_channels,
@@ -149,6 +150,7 @@ class ResidualBlock(nn.Module):
         groups=8,
         dropout=0.1,
     ):
+        """Constructor."""
         super(ResidualBlock, self).__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -201,6 +203,8 @@ class ResidualBlock(nn.Module):
 
 
 class UNet(nn.Module):
+    """Unet for 2D data, supporting timestep and class embeddings."""
+
     def __init__(
         self,
         in_channels: int,
@@ -210,6 +214,7 @@ class UNet(nn.Module):
         num_classes: int = 1,
         dropout=0.1,
     ):
+        """Constructor."""
         super(UNet, self).__init__()
 
         self.sample_size = image_size
@@ -276,6 +281,7 @@ class UNet(nn.Module):
         self.conv_out = nn.Conv2d(hidden_dims[0], out_channels=in_channels, kernel_size=1)
 
     def forward(self, sample, timesteps, cls):
+        """Model forward."""
         if not torch.is_tensor(timesteps):
             timesteps = torch.tensor([timesteps], dtype=torch.long, device=sample.device)
 

@@ -10,6 +10,8 @@ from tqdm import tqdm
 
 
 class DiffusionExperiment:
+    """DDMP experiment, supports training and generation of samples."""
+
     def __init__(
         self,
         model: torch.nn.Module,
@@ -25,6 +27,7 @@ class DiffusionExperiment:
         ema_decay: Optional[bool],
         torch_compile: bool = False,  # giving some issues
     ):
+        """Constructor."""
         if torch_compile:
             torch.backends.cudnn.benchmark = True
             torch._dynamo.reset()
@@ -62,6 +65,7 @@ class DiffusionExperiment:
         eval_dir: str = "./outputs/reverse_diffusion",
         checkpoints_dir: str = "./outputs/checkpoints",
     ):
+        """Train loop."""
         os.makedirs(eval_dir, exist_ok=True)
         os.makedirs(checkpoints_dir, exist_ok=True)
 
@@ -134,6 +138,7 @@ class DiffusionExperiment:
         self,
         dataloader: torch.utils.data.DataLoader,
     ) -> float:
+        """Train epoch."""
         self.model.train()
         self.model.to(device=self.device, dtype=self.dtype)
         if self.ema_decay is not None:
@@ -163,6 +168,7 @@ class DiffusionExperiment:
         return epoch_loss
 
     def train_step(self, x0s, ts, cls) -> torch.Tensor:
+        """Train step."""
         # forward diffusion (gt generation at random T steps)
         xts, gt_noise = self.diffusion.forward_diffusion(x0s, ts)
 
@@ -187,6 +193,7 @@ class DiffusionExperiment:
         data_shape: tuple[int, ...] = (3, 32, 32),
         num: int = 32,
     ) -> list[torch.Tensor]:
+        """Performs reverse diffusion."""
         model.eval()
         model.to(device=self.device, dtype=self.dtype)
 
@@ -237,6 +244,7 @@ class DiffusionExperiment:
         epochs_loss_list: list[float],
         fid_score_list: list[float],
     ) -> None:
+        """Logs losses and metrics."""
         plt.figure(figsize=(8, 5))
         plt.plot(
             list(range(0, len(epochs_loss_list))),
