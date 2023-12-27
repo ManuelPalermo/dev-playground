@@ -97,27 +97,29 @@ def get_dataset_image(
 
 
 def get_dataset_points(
-    dataset_name="ModelNet10", directory: str = "./data", shape: tuple[int, ...] = (3000,)
+    dataset_name: str = "ShapeNet", directory: str = "./data", shape: tuple[int, ...] = (3000,)
 ) -> tuple[Dataset, int]:
     dataset_root = os.path.join(directory, dataset_name)
 
     # op to pad number of points to max
     pad_fn = lambda p: torch.nn.functional.pad(p, pad=(0, 0, 0, shape[0] - p.shape[0]), value=0.0)
+    ch_first = lambda data: torch.permute(data, dims=(1, 0))
 
-    if dataset_name == "ModelNet10":
-        transforms = transforms_3d.Compose([lambda data: (pad_fn(data.pos), data.y)])
+    if dataset_name == "ShapeNet":
+        transforms = transforms_3d.Compose([lambda data: (ch_first(pad_fn(data.pos)), data.category)])
+        dataset = datasets_3d.ShapeNet(root=dataset_root, categories=None, include_normals=False, transform=transforms)
+        num_classes = dataset.num_classes
+
+    # TODO: fix issues with ModelNet data scale (points with very large xyz values break stuff)
+    elif dataset_name == "ModelNet10":
+        transforms = transforms_3d.Compose([lambda data: (ch_first(pad_fn(data.pos)), data.y)])
         dataset = datasets_3d.ModelNet(root=dataset_root, name="10", train=True, transform=transforms)
         num_classes = 10
 
     elif dataset_name == "ModelNet40":
-        transforms = transforms_3d.Compose([lambda data: (pad_fn(data.pos), data.y)])
+        transforms = transforms_3d.Compose([lambda data: (ch_first(pad_fn(data.pos)), data.y)])
         dataset = datasets_3d.ModelNet(root=dataset_root, name="40", train=True, transform=transforms)
         num_classes = 40
-
-    elif dataset_name == "ShapeNet":
-        transforms = transforms_3d.Compose([lambda data: (pad_fn(data.pos), data.category)])
-        dataset = datasets_3d.ShapeNet(root=dataset_root, categories=None, include_normals=False, transform=transforms)
-        num_classes = dataset.num_classes
 
     else:
         raise NotImplementedError(f"Unknown dataset name: {dataset_name}")

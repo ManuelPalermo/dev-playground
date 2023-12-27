@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from ddpm.diffusion import GaussianDiffusion
+from torch.utils.data import DataLoader
 from torcheval.metrics.image.fid import FrechetInceptionDistance
 from torchvision.utils import make_grid
 
@@ -17,8 +18,15 @@ except RuntimeError:
 
 
 def inverse_transform(tensors, max_val: float = 255.0):
-    """Convert tensors from [-1., 1.] to [0., max_val]"""
+    """Convert tensors from [-1., 1.] to [0., max_val]."""
     return ((tensors.clamp(-1, 1) + 1.0) / 2.0) * max_val
+
+
+def min_max_normalize(tensors: torch.Tensor, axis: int = -1, max_val: float = 1.0):
+    """Convert tensors from range to [min, max]."""
+    t_min = tensors.min(dim=axis, keepdim=True)[0]
+    t_max = tensors.max(dim=axis, keepdim=True)[0]
+    return ((tensors - t_min) / (t_max - t_min)) * max_val
 
 
 def prepare_fid_frames(frames: torch.Tensor) -> torch.Tensor:
@@ -26,18 +34,76 @@ def prepare_fid_frames(frames: torch.Tensor) -> torch.Tensor:
     return inverse_transform(torch.nan_to_num(frames), max_val=1.0).to(torch.float32)
 
 
-def prepare_vis_frames(frames: torch.Tensor, nrow: Optional[int] = 10) -> np.ndarray:
+def project_pointcloud_to_bev_image(
+    pcs: torch.Tensor, res: float = 0.01, space_m: tuple[float, ...] = (-0.6, 0.6)
+) -> torch.Tensor:
+    """Projects pointcloud xyz to BeV image."""
+
+    # TODO: fix viz for ModelNet (no idea what shape is stuff comming)
+    B, C, _ = pcs.shape
+
+    # assumes square region to project
+    img_shape = (int((space_m[1] - space_m[0]) / res), int((space_m[1] - space_m[0]) / res))
+
+    image = -torch.ones((B, img_shape[1], img_shape[0]), dtype=pcs.dtype, device=pcs.device)
+
+    for b_idx, sample_pc in enumerate(pcs):
+        x_points = sample_pc[0, :]
+        y_points = sample_pc[1, :]
+        z_points = sample_pc[2, :]
+        intensity = sample_pc[3, :] if C == 4 else z_points  # if no intensity data then visualize height
+
+        # filter invalid points (xyz=0 or xyz=nan) and points outside space
+        valid_point_mask = ~(
+            ((x_points == 0.0).to(torch.bool) & (y_points == 0.0).to(torch.bool) & (z_points == 0.0).to(torch.bool))
+            | (
+                (x_points == torch.nan).to(torch.bool)
+                & (y_points == torch.nan).to(torch.bool)
+                & (z_points == torch.nan).to(torch.bool)
+            )
+        )
+        inside_space_mask = ~(
+            (x_points > space_m[1]).to(torch.bool)
+            | (x_points < space_m[0]).to(torch.bool)
+            | (y_points > space_m[1]).to(torch.bool)
+            | (y_points < space_m[0]).to(torch.bool)
+            | (z_points < 0).to(torch.bool)
+        )
+        x_points = x_points[valid_point_mask & inside_space_mask]
+        y_points = y_points[valid_point_mask & inside_space_mask]
+        z_points = z_points[valid_point_mask & inside_space_mask]
+        intensity = intensity[valid_point_mask & inside_space_mask]
+
+        # convert from world to pixel positions (swaps x/y axis)
+        x_idx = ((-y_points / res) - (img_shape[0] // 2)).to(torch.int32)
+        y_idx = ((-x_points / res) + (img_shape[1] // 2)).to(torch.int32)
+
+        # normalize pixel values
+        pixel_values = min_max_normalize(intensity)
+
+        # scater pixels to image
+        image[b_idx, x_idx, y_idx] = pixel_values
+
+    return image[..., None, :, :]  # add channel dim: B, C, H, W
+
+
+def prepare_vis_frames(frames: torch.Tensor, nrow: Optional[int] = 10, data_type: str = "img") -> np.ndarray:
+    if data_type == "pcd":
+        frames = project_pointcloud_to_bev_image(frames)
+
     frames_gen_vis = inverse_transform(torch.nan_to_num(frames), max_val=255.0)
 
     if nrow is not None:
-        frames_gen_vis = torch.permute(make_grid(frames_gen_vis, nrow=nrow), dims=(1, 2, 0))  # GW x GH x C
+        # GW x GH x C
+        frames_gen_vis = torch.permute(make_grid(frames_gen_vis, nrow=nrow, pad_value=255), dims=(1, 2, 0))
     else:
-        frames_gen_vis = torch.permute(frames_gen_vis, dims=(0, 2, 3, 1))  # B x W x H x C
+        # B x W x H x C
+        frames_gen_vis = torch.permute(frames_gen_vis, dims=(0, 2, 3, 1))
 
     return frames_gen_vis.to(torch.uint8).to("cpu").numpy()
 
 
-def collect_n_samples_from_dataloader(dataloader, num: int) -> torch.Tensor:
+def collect_n_samples_from_dataloader(dataloader: DataLoader, num: int) -> torch.Tensor:
     frames_gt = []
     n_to_sample = np.ceil(num / dataloader.batch_size)
     for idx, (x0s, _) in enumerate(dataloader):
@@ -48,10 +114,7 @@ def collect_n_samples_from_dataloader(dataloader, num: int) -> torch.Tensor:
     return torch.cat(frames_gt, dim=0)[:num]
 
 
-def compute_fid_metric(
-    frames_gen: torch.Tensor,
-    dataloader,
-) -> float:
+def compute_fid_metric(frames_gen: torch.Tensor, dataloader: DataLoader) -> float:
     """Calculate FID metric from generated frames + sampled gt from a dataloader."""
 
     is_rgb = frames_gen.shape[1] == 3
@@ -75,9 +138,10 @@ def log_generation_examples(
     eval_examples_dir: str,
     timesteps: int,
     num_classes: int,
+    data_type: str,
 ) -> None:
     # prepare generated frames to be visualized
-    frames_grid_gen_vis = [prepare_vis_frames(frames_gen, nrow=10) for frames_gen in frames_steps]
+    frames_grid_gen_vis = [prepare_vis_frames(frames_gen, nrow=10, data_type=data_type) for frames_gen in frames_steps]
 
     # save final denoised frames
     plt.imsave(
@@ -118,29 +182,28 @@ def log_generation_examples(
 
 
 def log_forward_diffusion_examples(
-    dataloader,
+    dataloader: DataLoader,
     diffusion: GaussianDiffusion,
     num_samples: int,
     eval_examples_dir: str,
-    num_diffusion_timesteps: int = 1000,
     steps_to_vis: int = 15,
+    data_type: str = "img",
 ) -> None:
     # get a batch of samples
     frames_gt = collect_n_samples_from_dataloader(dataloader=dataloader, num=num_samples)
 
-    specific_timesteps = torch.linspace(0, num_diffusion_timesteps - 1, steps_to_vis, dtype=torch.long)
+    specific_timesteps = torch.linspace(0, diffusion.num_diffusion_timesteps - 1, steps_to_vis, dtype=torch.long)
 
-    noisy_images: list[torch.Tensor] = []
+    noisy_samples: list[torch.Tensor] = []
 
     for timestep in specific_timesteps:
         ts = torch.as_tensor(timestep, dtype=torch.long)
         xts, _ = diffusion.forward_diffusion(frames_gt, ts)
+        noisy_samples.append(xts.to("cpu"))
 
-        noisy_images.append(xts.to("cpu"))
+    frames_gt_vis = [prepare_vis_frames(frames_gt, nrow=1, data_type=data_type) for frames_gt in noisy_samples]
 
-    frames_gt_vis = [prepare_vis_frames(frames_gt, nrow=1) for frames_gt in noisy_images]
-
-    fig, ax = plt.subplots(1, len(frames_gt_vis), figsize=(10, 5), facecolor="white")
+    fig, ax = plt.subplots(1, len(frames_gt_vis), figsize=(25, 12), facecolor="white")
     for i, (timestep, sample) in enumerate(zip(specific_timesteps, frames_gt_vis)):
         ax[i].imshow(sample)
         ax[i].set_title(f"t={timestep}", fontsize=8)
@@ -148,7 +211,8 @@ def log_forward_diffusion_examples(
         ax[i].grid(False)
     fig.suptitle("Forward Diffusion Process", y=0.98)
     fig.tight_layout()
-    fig.savefig(fname=os.path.join(eval_examples_dir, f"frames_0_forward_diff.png"))
+    os.makedirs(eval_examples_dir, exist_ok=True)
+    fig.savefig(fname=os.path.join(eval_examples_dir, "frames_0_forward_diff.png"))
 
 
 def _debug_tensor(t, name=""):
@@ -158,5 +222,5 @@ def _debug_tensor(t, name=""):
         t.min(),
         t.max(),
         t.mean(),
-        torch.isnan(t.view(-1)).sum().item(),
+        torch.isnan(t.reshape(-1)).sum().item(),
     )

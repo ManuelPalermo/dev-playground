@@ -35,3 +35,4 @@ Based on projects from:
 - <https://github.com/lucidrains/denoising-diffusion-pytorch>
 - <https://github.com/hojonathanho/diffusion>
 - <https://github.com/openai/improved-diffusion>
+- <https://github.com/luost26/diffusion-point-cloud>

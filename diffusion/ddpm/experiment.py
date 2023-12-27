@@ -1,5 +1,4 @@
 import os
-import shutil
 from typing import Optional
 
 import matplotlib.pyplot as plt
@@ -18,11 +17,12 @@ class DiffusionExperiment:
         lr_scheduler: torch.optim.lr_scheduler.LRScheduler,
         diffusion: GaussianDiffusion,
         loss_fn: torch.nn.Module,
+        data_type: str,
         data_shape: tuple[int, ...],
         num_classes: int,
         device,
         dtype,
-        ema_decay: Optional[bool] = 0.999,
+        ema_decay: Optional[bool],
         torch_compile: bool = False,  # giving some issues
     ):
         if torch_compile:
@@ -35,6 +35,7 @@ class DiffusionExperiment:
         self.lr_scheduler = lr_scheduler
         self.diffusion = diffusion
         self.loss_fn = loss_fn
+        self.data_type = data_type
         self.data_shape = data_shape
         self.num_classes = num_classes
         self.device = device
@@ -70,8 +71,8 @@ class DiffusionExperiment:
             diffusion=self.diffusion,
             num_samples=10,
             eval_examples_dir=eval_dir,
-            num_diffusion_timesteps=self.timesteps,
             steps_to_vis=15,
+            data_type=self.data_type,
         )
 
         epochs_loss_list: list[float] = []
@@ -116,6 +117,7 @@ class DiffusionExperiment:
                     eval_examples_dir=eval_dir,
                     timesteps=self.timesteps,
                     num_classes=self.num_classes,
+                    data_type=self.data_type,
                 )
 
             epochs_loss_list.append(epochs_loss)

@@ -51,6 +51,8 @@ def main(cfg: DictConfig) -> None:
     diffusion = GaussianDiffusion(
         num_diffusion_timesteps=cfg.diffusion.num_steps,
         schedule=cfg.diffusion.noise_schedule,
+        beta_1=cfg.diffusion.beta_1,
+        beta_T=cfg.diffusion.beta_T,
         device=cfg.experiment.device,
         dtype=dtype,
     )
@@ -63,6 +65,7 @@ def main(cfg: DictConfig) -> None:
         lr_scheduler=lr_scheduler,
         diffusion=diffusion,
         loss_fn=loss_fn,
+        data_type=cfg.experiment.data_type,
         data_shape=cfg.experiment.data_shape,
         num_classes=num_classes,
         device=cfg.experiment.device,

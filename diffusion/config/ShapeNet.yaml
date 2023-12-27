@@ -6,8 +6,10 @@ dataset:
   pin_memory: False
 
 diffusion:
-  num_steps: 1000
+  num_steps: 500
   noise_schedule: "linear"
+  beta_1: 1e-6
+  beta_T: 5e-4
 
 model:
   class_cond: True
@@ -15,6 +17,7 @@ model:
   ema_decay: 0.999
 
 experiment:
+  data_type: "pcd"
   data_shape: [3, 3000]
   num_epochs: 26
   batch_size: 64

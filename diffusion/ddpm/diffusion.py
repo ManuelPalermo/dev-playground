@@ -6,11 +6,15 @@ class GaussianDiffusion:
         self,
         num_diffusion_timesteps=1000,
         schedule: str = "linear",
+        beta_1: float = 1e-4,
+        beta_T: float = 0.02,
         device="cpu",
         dtype=torch.float32,
     ):
         self.num_diffusion_timesteps = num_diffusion_timesteps
         self.schedule = schedule
+        self.beta_1 = beta_1
+        self.beta_T = beta_T
         self.device = device
         self.dtype = dtype
         self.initialize()
@@ -31,8 +35,8 @@ class GaussianDiffusion:
         if self.schedule == "linear":
             # Linear schedule from Ho et al, extended to work for any number of diffusion steps.
             scale = 1000 / self.num_diffusion_timesteps
-            beta_start = scale * 1e-4
-            beta_end = scale * 0.02
+            beta_start = scale * self.beta_1
+            beta_end = scale * self.beta_T
             return torch.linspace(
                 start=beta_start,
                 end=beta_end,
@@ -44,8 +48,8 @@ class GaussianDiffusion:
         elif self.schedule == "cosine":
             # Cosine schedule from improved diffusion
             # https://github.com/openai/improved-diffusion/blob/main/improved_diffusion/gaussian_diffusion.py
-            max_beta = torch.tensor(0.999)
-            alpha_bar = lambda t: torch.cos((t + 0.008) / 1.008 * torch.pi / 2) ** 2
+            max_beta = torch.tensor(1 - self.beta_T)
+            alpha_bar = lambda t: torch.cos((t + self.beta_1) / (1 + self.beta_1) * torch.pi / 2) ** 2
 
             ts = torch.arange(0, self.num_diffusion_timesteps, device=self.device, dtype=self.dtype)
             t1 = ts / self.num_diffusion_timesteps

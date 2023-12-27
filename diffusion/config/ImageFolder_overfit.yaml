@@ -8,6 +8,8 @@ dataset:
 diffusion:
   num_steps: 1000
   noise_schedule: "cosine"
+  beta_1: 0.001
+  beta_T: 0.008
 
 model:
   class_cond: True
@@ -15,6 +17,7 @@ model:
   ema_decay: 0.999
 
 experiment:
+  data_type: "img"
   data_shape: [3, 32, 32]
   num_epochs: 26
   batch_size: 64
