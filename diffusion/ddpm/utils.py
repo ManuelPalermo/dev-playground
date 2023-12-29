@@ -37,10 +37,10 @@ def prepare_fid_frames(frames: torch.Tensor) -> torch.Tensor:
 
 
 def project_pointcloud_to_bev_image(
-    pcs: torch.Tensor, res: float = 0.01, space_m: tuple[float, ...] = (-0.6, 0.6)
+    pcs: torch.Tensor, res: float = 0.01, space_m: tuple[float, ...] = (-0.75, 0.75)
 ) -> torch.Tensor:
     """Projects pointcloud xyz to BeV image."""
-    # TODO: fix viz for ModelNet (no idea what shape is stuff comming)
+
     B, C, _ = pcs.shape
 
     # assumes square region to project
@@ -64,20 +64,23 @@ def project_pointcloud_to_bev_image(
             )
         )
         inside_space_mask = ~(
-            (x_points > space_m[1]).to(torch.bool)
-            | (x_points < space_m[0]).to(torch.bool)
-            | (y_points > space_m[1]).to(torch.bool)
-            | (y_points < space_m[0]).to(torch.bool)
-            | (z_points < 0).to(torch.bool)
+            (x_points >= space_m[1]).to(torch.bool)
+            | (x_points <= space_m[0]).to(torch.bool)
+            | (y_points >= space_m[1]).to(torch.bool)
+            | (y_points <= space_m[0]).to(torch.bool)
+            | (z_points <= 0).to(torch.bool)
         )
         x_points = x_points[valid_point_mask & inside_space_mask]
         y_points = y_points[valid_point_mask & inside_space_mask]
         z_points = z_points[valid_point_mask & inside_space_mask]
         intensity = intensity[valid_point_mask & inside_space_mask]
 
+        if len(intensity) == 0:  # all points have been removed
+            continue
+
         # convert from world to pixel positions (swaps x/y axis)
-        x_idx = ((-y_points / res) - (img_shape[0] // 2)).to(torch.int32)
-        y_idx = ((-x_points / res) + (img_shape[1] // 2)).to(torch.int32)
+        x_idx = ((-y_points / res) - ((img_shape[0] // 2) - 1)).to(torch.int32)
+        y_idx = ((-x_points / res) + ((img_shape[1] // 2) - 1)).to(torch.int32)
 
         # normalize pixel values
         pixel_values = min_max_normalize(intensity)
@@ -119,8 +122,9 @@ def collect_n_samples_from_dataloader(dataloader: DataLoader, num: int) -> torch
 
 def compute_fid_metric(frames_gen: torch.Tensor, dataloader: DataLoader) -> float:
     """Calculate FID metric from generated frames + sampled gt from a dataloader."""
-    is_rgb = frames_gen.shape[1] == 3
-    if is_rgb:
+    assert frames_gen.shape
+    is_rgb_img = (frames_gen.shape[1] == 3) and (len(frames_gen.shape) == 4)
+    if is_rgb_img:
         frames_gt = collect_n_samples_from_dataloader(dataloader=dataloader, num=len(frames_gen))
 
         fid_metric = FrechetInceptionDistance(device="cpu")
@@ -141,10 +145,14 @@ def log_generation_examples(
     timesteps: int,
     num_classes: int,
     data_type: str,
+    steps_to_vis: int = 15,
 ) -> None:
     """Visualizes frames from reverse diffusion and saves some timesteps for visualization."""
     # prepare generated frames to be visualized
-    frames_grid_gen_vis = [prepare_vis_frames(frames_gen, nrow=10, data_type=data_type) for frames_gen in frames_steps]
+    frames_grid_gen_vis = [
+        prepare_vis_frames(frames_gen, nrow=(len(frames_gen) // num_classes), data_type=data_type)
+        for frames_gen in frames_steps
+    ]
 
     # save final denoised frames
     plt.imsave(
@@ -153,21 +161,21 @@ def log_generation_examples(
     )
 
     # save snapshots of frames at different timesteps
-    vis_tsteps = np.linspace(start=0, stop=timesteps - 1, num=15, dtype=np.int64)
+    vis_tsteps = np.linspace(start=0, stop=timesteps - 1, num=steps_to_vis, dtype=np.int64)
     vis_images = torch.linspace(
         0,
         frames_steps[0].shape[0] - 1,
-        min(num_classes, 10),
+        num_classes,
         dtype=torch.long,
         device="cpu",
     )
     frames_gen_vis = [
-        prepare_vis_frames(frames_gen[vis_images, ...], nrow=1)
+        prepare_vis_frames(frames_gen[vis_images, ...], nrow=1, data_type=data_type)
         for tstep, frames_gen in enumerate(frames_steps)
         if tstep in vis_tsteps
     ]
 
-    fig, ax = plt.subplots(1, len(frames_gen_vis), figsize=(10, 5), facecolor="white")
+    fig, ax = plt.subplots(1, len(frames_gen_vis), figsize=(int(num_classes * 2), num_classes), facecolor="white")
     for i, (timestep, sample) in enumerate(zip(vis_tsteps[::-1], frames_gen_vis)):
         ax[i].imshow(sample)
         ax[i].set_title(f"t={timestep}", fontsize=8)
@@ -176,6 +184,7 @@ def log_generation_examples(
     fig.suptitle("Reverse Diffusion Process", y=0.98)
     fig.tight_layout()
     fig.savefig(fname=os.path.join(eval_examples_dir, f"frames_{epoch}_reverse_diff.png"))
+    plt.close()
 
     # save gif with reverse diffusion
     gif_name = f"frames_{epoch}_reverse_diff.gif"
@@ -207,7 +216,7 @@ def log_forward_diffusion_examples(
 
     frames_gt_vis = [prepare_vis_frames(frames_gt, nrow=1, data_type=data_type) for frames_gt in noisy_samples]
 
-    fig, ax = plt.subplots(1, len(frames_gt_vis), figsize=(25, 12), facecolor="white")
+    fig, ax = plt.subplots(1, len(frames_gt_vis), figsize=(int(num_samples * 2), num_samples), facecolor="white")
     for i, (timestep, sample) in enumerate(zip(specific_timesteps, frames_gt_vis)):
         ax[i].imshow(sample)
         ax[i].set_title(f"t={timestep}", fontsize=8)
@@ -217,6 +226,7 @@ def log_forward_diffusion_examples(
     fig.tight_layout()
     os.makedirs(eval_examples_dir, exist_ok=True)
     fig.savefig(fname=os.path.join(eval_examples_dir, "frames_0_forward_diff.png"))
+    plt.close()
 
 
 def _debug_tensor(t, name=""):

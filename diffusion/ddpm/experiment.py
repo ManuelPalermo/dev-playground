@@ -96,7 +96,7 @@ class DiffusionExperiment:
                     "opt": self.optimizer.state_dict(),
                 }
                 if self.ema_decay is not None:
-                    torch.optim.swa_utils.update_bn(dataloader, self.ema_model, device=self.device)
+                    # torch.optim.swa_utils.update_bn(dataloader, self.ema_model, device=self.device)
                     checkpoint_dict["model_ema"] = self.ema_model.state_dict()
 
                 torch.save(
@@ -254,7 +254,7 @@ class DiffusionExperiment:
         plt.savefig(os.path.join(eval_dir, "Plot_loss.png"))
 
         mask = np.isfinite(fid_score_list)
-        plt.figure(figsize=(10, 5))
+        plt.figure(figsize=(8, 5))
         plt.plot(
             np.arange(0, len(fid_score_list))[mask],
             np.array(fid_score_list)[mask],

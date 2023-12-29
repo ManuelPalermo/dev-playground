@@ -37,17 +37,17 @@ repos:
       - id: isort
         args: ["--settings-path", "pyproject.toml"]
 
-  - repo: https://github.com/PyCQA/pydocstyle
-    rev: "6.3.0"
-    hooks:
-      - id: pydocstyle
-        args: ["--config", "pyproject.toml"]
-
   - repo: https://github.com/PyCQA/flake8
     rev: "6.1.0"
     hooks:
       - id: flake8
         args: [--config, "setup.cfg"] # NOTE: flake8 refuses to support pyproject.toml :(
+
+  - repo: https://github.com/pycqa/pylint
+    rev: "v3.0.3"
+    hooks:
+      - id: pylint
+        args: ["--rcfile", "pyproject.toml"]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: "v1.8.0"
@@ -55,8 +55,8 @@ repos:
       - id: mypy
         args: ["--config", "pyproject.toml"]
 
-  - repo: https://github.com/pycqa/pylint
-    rev: "v3.0.3"
+  - repo: https://github.com/PyCQA/pydocstyle
+    rev: "6.3.0"
     hooks:
-      - id: pylint
-        args: ["--rcfile", "pyproject.toml"]
+      - id: pydocstyle
+        args: ["--config", "pyproject.toml"]

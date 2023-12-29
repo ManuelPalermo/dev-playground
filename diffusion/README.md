@@ -18,13 +18,13 @@ NOTE: check the `./config/` folder to see existing configs. Any param can also b
 
 # Ideas / TODOs
 
-- [x] calculate FID
-- [x] conditional generation
-- [x] add model EMA
-- [x] add option to use custom folder with data (also util to overfit on the data from folder)
-- [ ] add generation of 2D/3D pointclouds
-- [ ] "pixel/point" conditional generation (e.g. based on semseg masks)
 - [x] add hydra conf
+- [x] conditional or unconditional generation
+- [x] add model EMA
+- [x] calculate FID
+- [x] add option to use custom folder with data (also util to overfit on the data from folder)
+- [x] add generation of 2D/3D pointclouds
+- [ ] "pixel/point" conditional generation (e.g. based on semseg masks- GT or SAM)
 
 # Aknowledgments
 
@@ -36,3 +36,4 @@ Based on projects from:
 - <https://github.com/hojonathanho/diffusion>
 - <https://github.com/openai/improved-diffusion>
 - <https://github.com/luost26/diffusion-point-cloud>
+- <https://github.com/openai/point-e>

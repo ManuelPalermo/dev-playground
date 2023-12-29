@@ -3,9 +3,8 @@ import torch
 from ddpm.data_generator import get_dataloader
 from ddpm.diffusion import GaussianDiffusion
 from ddpm.experiment import DiffusionExperiment
-from ddpm.model import UNet
+from ddpm.model.model_factory import get_model
 from omegaconf import DictConfig, OmegaConf
-from torchinfo import summary
 
 
 @hydra.main(config_path="./../config/")
@@ -24,20 +23,15 @@ def main(cfg: DictConfig) -> None:
         pin_memory=cfg.dataset.pin_memory,
     )
 
-    model = UNet(
-        in_channels=cfg.experiment.data_shape[0],
-        image_size=cfg.experiment.data_shape[-1],
-        hidden_dims=cfg.model.unet_hidden_dims,
-        num_classes=num_classes if cfg.model.class_cond else 1,
-        dropout=0.05,
-    )
-    summary(
-        model,
-        input_size=(
-            (cfg.experiment.batch_size, *cfg.experiment.data_shape),
-            (cfg.experiment.batch_size,),
-            (cfg.experiment.batch_size,),
-        ),
+    model = get_model(
+        model_name=cfg.model.name,
+        hidden_dims=cfg.model.hidden_dims,
+        data_type=cfg.experiment.data_type,
+        data_shape=cfg.experiment.data_shape,
+        num_classes=num_classes,
+        class_cond=cfg.model.class_cond,
+        batch_size=cfg.experiment.batch_size,
+        context_dim=cfg.model.context_dim if "context_dim" in cfg.model else None,
     )
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=cfg.experiment.optim_lr)
@@ -77,6 +71,7 @@ def main(cfg: DictConfig) -> None:
         dataloader=dataloader,
         num_epochs=cfg.experiment.num_epochs,
         eval_interval=cfg.experiment.eval_interval,
+        eval_num=cfg.experiment.eval_num,
         eval_dir=cfg.experiment.eval_dir,
         checkpoints_dir=cfg.experiment.checkpoints_dir,
     )
