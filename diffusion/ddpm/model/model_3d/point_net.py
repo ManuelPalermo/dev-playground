@@ -43,7 +43,8 @@ class PointwiseNet(Module):
         self.class_embedding = torch.nn.Embedding(num_embeddings=num_classes, embedding_dim=class_dim)
 
     def forward(self, x, ctx, ts, cls):
-        """
+        """Forward.
+
         Args:
             x:   Point clouds at some timestep ts, (B, d, N).
             ctx: Context (B, F).
@@ -136,7 +137,8 @@ class PointNet(Module):
         )
 
     def forward(self, x, ts, cls):
-        """
+        """Forward.
+
         Args:
             x:   Point clouds at some timestep ts, (B, N, d).
             ts:  Time. (B, ).

@@ -16,6 +16,7 @@ line_length = 120
 
 [tool.pydocstyle]
 convention = "google"
+add_ignore = ["D100", "D104", "D107", "D202", "D101", "D102", "D103"] # TODO: eventually add back "D101", "D102", "D103"
 
 [tool.mypy]
 ignore_missing_imports = true

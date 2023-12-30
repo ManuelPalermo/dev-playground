@@ -10,14 +10,16 @@ def checkpoint(
     params: Iterable[torch.Tensor],
     flag: bool,
 ):
-    """
-    Evaluate a function without caching intermediate activations, allowing for
-    reduced memory at the expense of extra compute in the backward pass.
-    :param func: the function to evaluate.
-    :param inputs: the argument sequence to pass to `func`.
-    :param params: a sequence of parameters `func` depends on but does not
+    """Evaluate a function without caching intermediate activations.
+
+    Allows for reduced memory at the expense of extra compute in the backward pass.
+
+    Args:
+        func: the function to evaluate.
+        inputs: the argument sequence to pass to `func`.
+        params: a sequence of parameters `func` depends on but does not
                    explicitly take as arguments.
-    :param flag: if False, disable gradient checkpointing.
+        flag: if False, disable gradient checkpointing.
     """
     if flag:
         args = tuple(inputs) + tuple(params)
@@ -64,17 +66,16 @@ def init_linear(layer, stddev):
 
 
 def timestep_embedding(timesteps, dim, max_period=10000):
-    """
-    Create sinusoidal timestep embeddings.
+    """Create sinusoidal timestep embeddings.
 
     Args:
         timesteps: a 1-D Tensor of N indices, one per batch element.
                         These may be fractional.
         dim: the dimension of the output.
         max_period: controls the minimum frequency of the embeddings.
+
     Returns:
         an [N x dim] Tensor of positional embeddings.
-
     """
     half = dim // 2
     freqs = torch.exp(-math.log(max_period) * torch.arange(start=0, end=half, dtype=torch.float32) / half).to(
@@ -240,7 +241,8 @@ class PointDiffusionTransformer(torch.nn.Module):
             self.output_proj.bias.zero_()
 
     def forward(self, x: torch.Tensor, ts: torch.Tensor, cls: torch.Tensor):
-        """
+        """Forward.
+
         Args:
             x: an [B x C x N] tensor.
             ts: an [B] tensor.
