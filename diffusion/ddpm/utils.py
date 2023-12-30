@@ -175,7 +175,8 @@ def log_generation_examples(
         if tstep in vis_tsteps
     ]
 
-    fig, ax = plt.subplots(1, len(frames_gen_vis), figsize=(int(num_classes * 2), num_classes), facecolor="white")
+    figsize = (min(max(int(num_classes * 2), 12), 30), min(max(num_classes, 6), 15))
+    fig, ax = plt.subplots(1, len(frames_gen_vis), figsize=figsize, facecolor="white")
     for i, (timestep, sample) in enumerate(zip(vis_tsteps[::-1], frames_gen_vis)):
         ax[i].imshow(sample)
         ax[i].set_title(f"t={timestep}", fontsize=8)
@@ -216,7 +217,8 @@ def log_forward_diffusion_examples(
 
     frames_gt_vis = [prepare_vis_frames(frames_gt, nrow=1, data_type=data_type) for frames_gt in noisy_samples]
 
-    fig, ax = plt.subplots(1, len(frames_gt_vis), figsize=(int(num_samples * 2), num_samples), facecolor="white")
+    figsize = (min(max(int(num_samples * 2), 12), 30), min(max(num_samples, 6), 15))
+    fig, ax = plt.subplots(1, len(frames_gt_vis), figsize=figsize, facecolor="white")
     for i, (timestep, sample) in enumerate(zip(specific_timesteps, frames_gt_vis)):
         ax[i].imshow(sample)
         ax[i].set_title(f"t={timestep}", fontsize=8)

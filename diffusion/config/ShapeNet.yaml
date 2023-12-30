@@ -20,17 +20,19 @@ model:
   context_dim: 128
   class_cond: True
   ema_decay: 0.999
+  dropout: 0.0
 
 experiment:
   data_type: "pcd"
   data_shape: [3, 3000]
-  num_epochs: 201
+  num_epochs: 301
   batch_size: 64
   optim_lr: 0.0005
   lr_schedule_mult: 0.1 # 1.0 effectively ignores schedule
   device: "cuda"
-  dtype: "float32" # NOTE: bfloat16 is possible and faster on Ampere+ GPUs, but results are not stable for some reason
-  eval_interval: 10
-  eval_num: 100
+  dtype: "float32"
+  eval_interval: 20
+  eval_num: 50
   eval_dir: ./ShapeNet/reverse_diffusion
   checkpoints_dir: ./ShapeNet/checkpoints
+  checkpoint_path: ""

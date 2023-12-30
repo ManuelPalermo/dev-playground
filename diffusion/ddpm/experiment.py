@@ -64,6 +64,7 @@ class DiffusionExperiment:
         eval_num: int = 100,
         eval_dir: str = "./outputs/reverse_diffusion",
         checkpoints_dir: str = "./outputs/checkpoints",
+        init_epoch: int = 0,
     ):
         """Train loop."""
         os.makedirs(eval_dir, exist_ok=True)
@@ -81,28 +82,17 @@ class DiffusionExperiment:
 
         epochs_loss_list: list[float] = []
         fid_score_list: list[float] = []
-        for epoch in range(num_epochs):
+        for epoch in range(init_epoch, num_epochs):
             # Train
             tq = tqdm(total=len(dataloader), desc=f"Train :: Epoch: {epoch}/{num_epochs-1}")
-            epochs_loss = self.train_epoch(dataloader=dataloader)
-            tq.set_postfix_str(s=f"Epoch Loss: {epochs_loss:.4f}")
+            epoch_loss = self.train_epoch(dataloader=dataloader)
+            tq.set_postfix_str(s=f"Epoch Loss: {epoch_loss:.4f}")
 
             # Eval example logging
             fid_score = np.nan
             if eval_interval is not None and epoch % eval_interval == 0:
                 # save model checkpoints (current model and EMA model)
-                checkpoint_dict = {
-                    "model": self.model.state_dict(),
-                    "opt": self.optimizer.state_dict(),
-                }
-                if self.ema_decay is not None:
-                    # torch.optim.swa_utils.update_bn(dataloader, self.ema_model, device=self.device)
-                    checkpoint_dict["model_ema"] = self.ema_model.state_dict()
-
-                torch.save(
-                    checkpoint_dict,
-                    os.path.join(checkpoints_dir, f"ckpt_{epoch}_{epochs_loss:.03f}.pt"),
-                )
+                self.save_checkpoint(epoch=epoch, epoch_loss=epoch_loss, ckpt_dir=checkpoints_dir)
 
                 # create grid of example reverse diffusion steps
                 frames_steps_gen = self.reverse_diffusion(
@@ -124,7 +114,7 @@ class DiffusionExperiment:
                     data_type=self.data_type,
                 )
 
-            epochs_loss_list.append(epochs_loss)
+            epochs_loss_list.append(epoch_loss)
             fid_score_list.append(fid_score)
 
             # log losses
@@ -237,6 +227,21 @@ class DiffusionExperiment:
             outs.append(x.detach().to("cpu"))
 
         return outs
+
+    def save_checkpoint(self, epoch: int, epoch_loss: float, ckpt_dir: str) -> None:
+        checkpoint_dict = {
+            "model": self.model.state_dict(),
+            "opt": self.optimizer.state_dict(),
+            "epoch": epoch,
+        }
+        if self.ema_decay is not None:
+            # torch.optim.swa_utils.update_bn(dataloader, self.ema_model, device=self.device)
+            checkpoint_dict["model_ema"] = self.ema_model.state_dict()
+
+        torch.save(
+            checkpoint_dict,
+            os.path.join(ckpt_dir, f"ckpt_{epoch}_{epoch_loss:.04f}.pt"),
+        )
 
     @staticmethod
     def log_losses_metrics(

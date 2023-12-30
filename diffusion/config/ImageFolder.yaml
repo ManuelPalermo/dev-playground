@@ -16,6 +16,7 @@ model:
   hidden_dims: [32, 64, 128, 256]
   class_cond: False
   ema_decay: 0.999
+  dropout: 0.05
 
 experiment:
   data_type: "img"
@@ -25,8 +26,9 @@ experiment:
   optim_lr: 0.0005
   lr_schedule_mult: 0.1 # 1.0 effectively ignores schedule
   device: "cuda"
-  dtype: "float32" # NOTE: bfloat16 is possible and faster on Ampere+ GPUs, but results are not stable for some reason
+  dtype: "float32"
   eval_interval: 5
   eval_num: 100
   eval_dir: ./ImageFolder/reverse_diffusion
   checkpoints_dir: ./ImageFolder/checkpoints
+  checkpoint_path: ""

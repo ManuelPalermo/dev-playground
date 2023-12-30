@@ -31,6 +31,7 @@ def main(cfg: DictConfig) -> None:
         num_classes=num_classes,
         class_cond=cfg.model.class_cond,
         batch_size=cfg.experiment.batch_size,
+        dropout=cfg.model.dropout,
         context_dim=cfg.model.context_dim if "context_dim" in cfg.model else None,
     )
 
@@ -41,6 +42,13 @@ def main(cfg: DictConfig) -> None:
         eta_min=cfg.experiment.optim_lr * cfg.experiment.lr_schedule_mult,
         last_epoch=-1,
     )
+
+    init_epoch = 0
+    if cfg.experiment.checkpoint_path != "":
+        checkpoint = torch.load(cfg.experiment.checkpoint_path)
+        model.load_state_dict(checkpoint["model"])
+        optimizer.load_state_dict(checkpoint["opt"])
+        init_epoch = checkpoint.get("epoch", 0)  # try to get epoch from dict
 
     diffusion = GaussianDiffusion(
         num_diffusion_timesteps=cfg.diffusion.num_steps,
@@ -65,6 +73,7 @@ def main(cfg: DictConfig) -> None:
         device=cfg.experiment.device,
         dtype=dtype,
         ema_decay=cfg.model.ema_decay,
+        torch_compile=True,
     )
 
     diffusion_model.train(
@@ -74,6 +83,7 @@ def main(cfg: DictConfig) -> None:
         eval_num=cfg.experiment.eval_num,
         eval_dir=cfg.experiment.eval_dir,
         checkpoints_dir=cfg.experiment.checkpoints_dir,
+        init_epoch=init_epoch,
     )
 
 

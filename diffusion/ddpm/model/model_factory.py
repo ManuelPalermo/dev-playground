@@ -14,8 +14,8 @@ def get_model(
     data_shape: tuple[int, ...],
     num_classes: int,
     class_cond: bool = True,
-    dropout=0.05,
-    batch_size=1,
+    dropout: float = 0.0,
+    batch_size: int = 1,
     context_dim: Optional[int] = None,
 ) -> torch.nn.Module:
     """Creates model based opn config, supports 2D image models as well as 3D pointcloud models."""
@@ -28,12 +28,7 @@ def get_model(
             image_size=data_shape[-1],
             hidden_dims=hidden_dims,
             num_classes=num_classes if class_cond else 1,
-            dropout=0.05,
-        )
-        input_example_shape = (
-            (batch_size, *data_shape),
-            (batch_size,),
-            (batch_size,),
+            dropout=dropout,
         )
 
     # 3D models:
@@ -46,11 +41,6 @@ def get_model(
             class_dim=data_shape[0],
             num_classes=num_classes if class_cond else 1,
             residual=False,
-        )
-        input_example_shape = (
-            (batch_size, *data_shape),
-            (batch_size,),
-            (batch_size,),
         )
 
     elif model_name == "PointDiffusionTransformer":
@@ -66,14 +56,15 @@ def get_model(
             num_classes=num_classes if class_cond else 1,
             time_token_cond=True,
         )
-        input_example_shape = (
-            (batch_size, *data_shape),
-            (batch_size,),
-            (batch_size,),
-        )
 
     else:
         raise NotImplementedError(f"Unknow model config: {model_name}")
+
+    input_example_shape = (
+        (batch_size, *data_shape),
+        (batch_size,),
+        (batch_size,),
+    )
 
     summary(model, input_size=input_example_shape)
     return model

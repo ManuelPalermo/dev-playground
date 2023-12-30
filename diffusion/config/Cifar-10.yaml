@@ -13,20 +13,22 @@ diffusion:
 
 model:
   name: "UNet2d"
-  hidden_dims: [32, 64, 128, 256]
+  hidden_dims: [64, 128, 256, 512]
   class_cond: True
   ema_decay: 0.999
+  dropout: 0.1
 
 experiment:
   data_type: "img"
   data_shape: [3, 32, 32]
-  num_epochs: 101
+  num_epochs: 501
   batch_size: 64
   optim_lr: 0.0005
   lr_schedule_mult: 0.1 # 1.0 effectively ignores schedule
   device: "cuda"
-  dtype: "float32" # NOTE: bfloat16 is possible and faster on Ampere+ GPUs, but results are not stable for some reason
-  eval_interval: 5
+  dtype: "float32"
+  eval_interval: 10
   eval_num: 100
   eval_dir: ./Cifar-10/reverse_diffusion
   checkpoints_dir: ./Cifar-10/checkpoints
+  checkpoint_path: ""

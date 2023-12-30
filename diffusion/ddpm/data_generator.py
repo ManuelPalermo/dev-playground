@@ -152,8 +152,8 @@ def get_dataloader(
     directory: str = "./data",
     data_shape: tuple[int, ...] = (1, 28, 28),
     batch_size: int = 32,
-    pin_memory: bool = False,
     shuffle: bool = True,
+    pin_memory: bool = False,
     num_workers: int = 0,
 ) -> tuple[DataLoader, int]:
     """Creates pytorch dataloader."""
@@ -174,5 +174,6 @@ def get_dataloader(
         pin_memory=pin_memory,
         num_workers=num_workers,
         shuffle=shuffle,
+        drop_last=True,
     )
     return dataloader, num_classes
