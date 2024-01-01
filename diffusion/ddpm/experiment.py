@@ -64,11 +64,18 @@ class DiffusionExperiment:
         eval_num: int = 100,
         eval_dir: str = "./outputs/reverse_diffusion",
         checkpoints_dir: str = "./outputs/checkpoints",
-        init_epoch: int = 0,
+        checkpoint_path: Optional[str] = None,
     ):
         """Train loop."""
         os.makedirs(eval_dir, exist_ok=True)
         os.makedirs(checkpoints_dir, exist_ok=True)
+
+        init_epoch = 0
+        if checkpoint_path is not None:
+            checkpoint = torch.load(checkpoint_path)
+            self.model.load_state_dict(checkpoint["model"])
+            self.optimizer.load_state_dict(checkpoint["opt"])
+            init_epoch = checkpoint.get("epoch", 0)  # try to get epoch from dict
 
         # log some forward diffusion samples from the dataloader
         log_forward_diffusion_examples(

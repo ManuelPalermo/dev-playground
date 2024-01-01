@@ -43,13 +43,6 @@ def main(cfg: DictConfig) -> None:
         last_epoch=-1,
     )
 
-    init_epoch = 0
-    if cfg.experiment.checkpoint_path != "":
-        checkpoint = torch.load(cfg.experiment.checkpoint_path)
-        model.load_state_dict(checkpoint["model"])
-        optimizer.load_state_dict(checkpoint["opt"])
-        init_epoch = checkpoint.get("epoch", 0)  # try to get epoch from dict
-
     diffusion = GaussianDiffusion(
         num_diffusion_timesteps=cfg.diffusion.num_steps,
         schedule=cfg.diffusion.noise_schedule,
@@ -83,7 +76,7 @@ def main(cfg: DictConfig) -> None:
         eval_num=cfg.experiment.eval_num,
         eval_dir=cfg.experiment.eval_dir,
         checkpoints_dir=cfg.experiment.checkpoints_dir,
-        init_epoch=init_epoch,
+        checkpoint_path=cfg.experiment.checkpoint_path,
     )
 
 
