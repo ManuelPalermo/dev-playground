@@ -20,7 +20,7 @@ jobs:
         python-version: ["3.10"]
 
     env:
-      CHANGED_PYTHON_FILES: $(git diff --diff-filter=d --name-only origin/main origin/$CI_BUILD_REF_NAME -- )
+      CHANGED_PYTHON_FILES: $(git diff --diff-filter=d --name-only $GITHUB_BASE_REF $GITHUB_HEAD_REF | grep "*.py")
 
     steps:
       - name: Checkout branch
