@@ -93,7 +93,8 @@ Reverse Diffusion Examples:
 - [x] calculate FID
 - [x] add option to use custom folder with data (also util to overfit on the data from folder)
 - [x] add generation of 2D/3D pointclouds
-- [ ] "pixel/point" conditional generation (e.g. based on semseg masks- GT or SAM)
+- [ ] generation with textual conditioning (e.g. CLIP based)
+- [ ] generation with per/ pixel/point conditioning (e.g. based on semseg masks - from GT or SAM)
 
 # Aknowledgments
 
