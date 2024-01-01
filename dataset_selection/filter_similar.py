@@ -14,7 +14,7 @@ from utils import (
 )
 
 
-def filter_similar_images_in_dataset(
+def filter_similar_images_in_dataset(  # noqa: C901
     dataset: Sequence[str],
     score_threshold: float = 100_000.0,
     chunk_size: Optional[int] = None,

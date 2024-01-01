@@ -25,9 +25,7 @@ def draw_color_mask(img, borders, color=(0, 0, 0)):
     return img
 
 
-def preprocess_image_change_detection(
-    img, gaussian_blur_radius_list=None, black_mask=(5, 10, 5, 0)
-):
+def preprocess_image_change_detection(img, gaussian_blur_radius_list=None, black_mask=(5, 10, 5, 0)):
     gray = img.copy()
     # gray = cv2.cvtColor(gray, cv2.COLOR_BGR2GRAY) # no need, sa images already come pre-processed now
     if gaussian_blur_radius_list is not None:
@@ -107,9 +105,7 @@ def find_folder_images(path: str):
     return img_files
 
 
-def split_list_in_chunks(
-    lst: Sequence[Any], chunk_size: Optional[int] = None
-) -> List[Sequence[Any]]:
+def split_list_in_chunks(lst: Sequence[Any], chunk_size: Optional[int] = None) -> List[Sequence[Any]]:
     """Splits a list into chunks of desired size."""
     if chunk_size is None:
         chunk_size = len(lst)

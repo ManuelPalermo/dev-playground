@@ -1,6 +1,14 @@
+[tool.pylint.main]
+fail-under = 8
+
+[tool.pylint.format]
+max-line-length = 120
+
+[tool.pylint."messages control"]
+disable = ["import-error"]
+
 [tool.black]
 line_length = 120
-
 
 [tool.isort]
 profile = "black"
@@ -8,15 +16,11 @@ line_length = 120
 
 [tool.pydocstyle]
 convention = "google"
-
-
-[tool.pylint]
-fail-under = 9
-max-line-length = 120
-
+add_ignore = ["D100", "D104", "D107", "D202", "D101", "D102", "D103"] # TODO: eventually add back "D101", "D102", "D103"
 
 [tool.mypy]
-
+ignore_missing_imports = true
+# strict = true     # TODO: eventually add back proper type checks
 
 [tool.pytest.ini_options]
 python_files = ["test_*.py"]

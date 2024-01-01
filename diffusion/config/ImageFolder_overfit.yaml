@@ -1,0 +1,34 @@
+dataset:
+  name: "ImageFolder_overfit"
+  directory: "~/workspace/diffusion/data/ImageFolder_overfit/"
+  shuffle: True
+  num_workers: 0
+  pin_memory: False
+
+diffusion:
+  num_steps: 1000
+  noise_schedule: "cosine"
+  beta_1: 0.001
+  beta_T: 0.008
+
+model:
+  name: "UNet2d"
+  hidden_dims: [32, 64, 128, 256]
+  class_cond: True
+  ema_decay: 0.999
+  dropout: 0.0
+
+experiment:
+  data_type: "img"
+  data_shape: [3, 32, 32]
+  num_epochs: 41
+  batch_size: 64
+  optim_lr: 0.001
+  lr_schedule_mult: 0.01 # 1.0 effectively ignores schedule
+  device: "cuda"
+  dtype: "float32"
+  eval_interval: 10
+  eval_num: 20
+  eval_dir: ./ImageFolder_overfit/reverse_diffusion
+  checkpoints_dir: ./ImageFolder_overfit/checkpoints
+  checkpoint_path: ""
