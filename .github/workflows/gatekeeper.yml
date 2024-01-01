@@ -20,7 +20,7 @@ jobs:
         python-version: ["3.10"]
 
     env:
-      CHANGED_FILES_PYTHON: $(git diff --diff-filter=d --name-only $(git merge-base HEAD origin/main) HEAD | grep .py)
+      CHANGED_PYTHON_FILES: $(git diff --diff-filter=d --name-only origin/main origin/$CI_BUILD_REF_NAME -- )
 
     steps:
       - name: Checkout branch
@@ -42,19 +42,19 @@ jobs:
               pylint
 
       - name: "Check SCA: black"
-        run: python -m black ${{env.CHANGED_FILES_PYTHON}} --check --config="pyproject.toml"
+        run: python -m black ${{env.CHANGED_PYTHON_FILES}} --check --config="pyproject.toml"
 
       - name: "Check SCA: isort"
-        run: python -m isort ${{env.CHANGED_FILES_PYTHON}} --check-only --settings-path="pyproject.toml"
+        run: python -m isort ${{env.CHANGED_PYTHON_FILES}} --check-only --settings-path="pyproject.toml"
 
       - name: "Check SCA: flake8"
-        run: python -m flake8 ${{env.CHANGED_FILES_PYTHON}} --count --config="setup.cfg"
+        run: python -m flake8 ${{env.CHANGED_PYTHON_FILES}} --count --config="setup.cfg"
 
       - name: "Check SCA: pylint"
-        run: python -m pylint ${{env.CHANGED_FILES_PYTHON}} --recursive "y" --rcfile="pyproject.toml"
+        run: python -m pylint ${{env.CHANGED_PYTHON_FILES}} --recursive "y" --rcfile="pyproject.toml"
 
       - name: "Check SCA: mypy"
-        run: python -m mypy ${{env.CHANGED_FILES_PYTHON}} --config="pyproject.toml"
+        run: python -m mypy ${{env.CHANGED_PYTHON_FILES}} --config="pyproject.toml"
 
       - name: "Check SCA: pydocstyle"
-        run: python -m pydocstyle ${{env.CHANGED_FILES_PYTHON}} --count --config="pyproject.toml"
+        run: python -m pydocstyle ${{env.CHANGED_PYTHON_FILES}} --count --config="pyproject.toml"
