@@ -20,11 +20,13 @@ jobs:
         python-version: ["3.10"]
 
     env:
-      CHANGED_PYTHON_FILES: $(git diff --diff-filter=d --name-only $GITHUB_BASE_REF $GITHUB_HEAD_REF | grep "*.py")
+      CHANGED_PYTHON_FILES: $(git diff --diff-filter=d --name-only $GITHUB_BASE_REF $GITHUB_HEAD_REF | grep ".py")
 
     steps:
       - name: Checkout branch
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Set up Python (${{ matrix.python-version }})
         uses: actions/setup-python@v4
