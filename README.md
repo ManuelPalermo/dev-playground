@@ -22,6 +22,8 @@ Simple development playground to quickly try random stuff. Features include:
 
 # Explored topics
 
-- *Diffusion*: data generation using DDPMs (conditional and unconditional generation)
+- **diffusion**: data generation using DDPMs (conditional and unconditional generation).
 
-- *dataset_selection*: Selecting of most diverse images of a directory based on similarity algorithm (classical CV)
+- **dataset_creator**: CLIP based text and image search over an image directory and image autolabelling.
+
+- **dataset_selection**: Selecting of most diverse images of a directory based on similarity algorithm (classical CV).
