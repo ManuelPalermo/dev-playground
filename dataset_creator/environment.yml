@@ -19,3 +19,7 @@ dependencies:
       - hydra-core
       - open_clip_torch
       - transformers
+      - autodistill
+      - autodistill-grounded-sam
+      - roboflow
+      - scikit-learn
