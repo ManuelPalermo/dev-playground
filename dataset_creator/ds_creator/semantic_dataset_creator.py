@@ -24,7 +24,7 @@ class SemanticDatasetCreator:
         self.clip_model = ClipModel(*clip_model_name_weights, device=device) if clip_model_name_weights else None
 
         self.grounding_sam_model = (
-            GroundedSAM(ontology=CaptionOntology({"dog": "dog", "cat": "cat", "birds": "birds"}))
+            GroundedSAM(ontology=CaptionOntology({"dummy": "dummy"}))  # onthology will be set for each query
             if grounding_sam_model
             else None
         )
@@ -37,7 +37,7 @@ class SemanticDatasetCreator:
         file_path: str,
         compute_embedding: bool = True,
         compute_caption: bool = True,
-        compute_instance_labels: bool = False,
+        compute_instance_labels_onthology: dict[str, str] | None = None,
     ) -> tuple[dict[str, Any], None | list[np.ndarray]]:
         image = self.load_image(file_path, shape=self.image_shape)
 
@@ -54,10 +54,13 @@ class SemanticDatasetCreator:
             }
 
         semseg_mask = None
-        if compute_instance_labels:
+
+        if compute_instance_labels_onthology:
             assert (
                 self.grounding_sam_model is not None
             ), "Initialized Grounding-SAM model is required to 'compute_instance_segmentation'."
+
+            self.grounding_sam_model.set_ontology(CaptionOntology(compute_instance_labels_onthology))
 
             detections = self.grounding_sam_model.predict(input=image)
 
@@ -110,7 +113,7 @@ class SemanticDatasetCreator:
         directory: str,
         compute_embedding: bool = True,
         compute_caption: bool = True,
-        compute_instance_labels: bool = True,
+        compute_instance_labels_onthology: dict[str, str] | None = None,
         save_path: str | None = None,
     ):
         print(">> Running 'compute_autolabel_directory'")
@@ -120,7 +123,7 @@ class SemanticDatasetCreator:
                 file_path,
                 compute_embedding=compute_embedding,
                 compute_caption=compute_caption,
-                compute_instance_labels=compute_instance_labels,
+                compute_instance_labels_onthology=compute_instance_labels_onthology,
             )
 
             if save_path is None:
@@ -156,7 +159,7 @@ class SemanticDatasetCreator:
 
         if clear_metadata_and_labels or clear_search:
             search_files.extend(sorted(glob.glob(f"{directory}/**/*_metadata.json", recursive=True)))
-            search_files.extend(sorted(glob.glob(f"{directory}/**/*_semseg_mask.png", recursive=True)))
+            search_files.extend(sorted(glob.glob(f"{directory}/**/*_semseg_mask*.png", recursive=True)))
 
         for file_path in tqdm(search_files, desc="Cleaning metadata"):
             os.remove(file_path)

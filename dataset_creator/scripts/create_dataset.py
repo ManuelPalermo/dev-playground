@@ -21,14 +21,20 @@ def main():
     semantic_search.text_search_directory(
         directory="./data/images/",
         save_path="./data/output/search",
-        text_query="an orange and white cat",
-        top_k=3,
+        text_query="a playfull animal",
+        top_k=10,
+    )
+    semantic_search.text_search_directory(
+        directory="./data/images/",
+        save_path="./data/output/search",
+        text_query="a scene with multiple humans",
+        top_k=5,
     )
     # search best matches in directory for a given image
     semantic_search.image_search_directory(
         directory="./data/images/",
         save_path="./data/output/search",
-        image_query="./data/images/bird/7.png",
+        image_query="./data/images/birds/b86ab31a85c9d98991b99dd73283326d.png",
         top_k=3,
     )
 
@@ -39,7 +45,12 @@ def main():
         save_path="./data/output/search",
         compute_embedding=True,
         compute_caption=True,
-        compute_instance_labels=True,
+        compute_instance_labels_onthology={
+            "cat": "cat",
+            "dog of any breed": "dog",
+            "colorful bird": "bird",
+            "person of any race or age (human), walking or standing": "human",
+        },
     )
 
 

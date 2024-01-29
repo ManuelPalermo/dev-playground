@@ -15,18 +15,15 @@ class ClipModel:
         model_version="coca_ViT-L-14",
         pretrained_weights="mscoco_finetuned_laion2B-s13B-b90k",
         device: str = "cuda",
-        precision: str = "fp32",
     ):
         self.device = device
         self.model_version = model_version
         self.pretrained_weights = pretrained_weights
-        self.precision = precision
 
         self.model, _, self.preprocessor = open_clip.create_model_and_transforms(
             model_version,
             pretrained=pretrained_weights,
             device=device,
-            precision=precision,
         )
         self.tokenizer = open_clip.get_tokenizer(model_version)
 
