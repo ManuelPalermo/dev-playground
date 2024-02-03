@@ -1,129 +1,67 @@
 import glob
+import itertools
 import json
 import os
 import shutil
 from typing import Any
 
-import cv2
 import numpy as np
 import torch
-from autodistill.detection import CaptionOntology
-from autodistill_grounded_sam import GroundedSAM
 from ds_creator.clip_image_search import ClipModel
+from ds_creator.utils import load_image
+from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 
 
 class SemanticDatasetCreator:
     def __init__(
         self,
-        clip_model_name_weights: tuple[str, str] | None = ("coca_ViT-L-14", "mscoco_finetuned_laion2B-s13B-b90k"),
-        grounding_sam_model=None,
+        clip_model_name_weights: tuple[str, str] = ("coca_ViT-L-14", "mscoco_finetuned_laion2B-s13B-b90k"),
         device: str = "cuda",
         image_shape: tuple[int, int] = (224, 224),
     ):
-        self.clip_model = ClipModel(*clip_model_name_weights, device=device) if clip_model_name_weights else None
-
-        self.grounding_sam_model = (
-            GroundedSAM(ontology=CaptionOntology({"dummy": "dummy"}))  # onthology will be set for each query
-            if grounding_sam_model
-            else None
-        )
-
         self.image_shape = image_shape
+        self.clip_model = ClipModel(*clip_model_name_weights, device=device)
 
     @torch.inference_mode()
-    def compute_metadata_and_autolabel(
+    def compute_metadata_and_embeddings(
         self,
         file_path: str,
         compute_embedding: bool = True,
         compute_caption: bool = True,
-        compute_instance_labels_onthology: dict[str, str] | None = None,
-    ) -> tuple[dict[str, Any], None | list[np.ndarray]]:
-        image = self.load_image(file_path, shape=self.image_shape)
+    ) -> dict[str, Any]:
+        image = load_image(file_path, shape=self.image_shape)
 
         metadata: dict[str, Any] = {
             "original_filepath": file_path,
+            "model": f"{self.clip_model.model_version}+{self.clip_model.pretrained_weights}",
         }
 
         if compute_caption:
-            assert self.clip_model is not None, "Initialized clip model is required to 'compute_caption'."
+            assert "coca" in self.clip_model.model_version.lower(), "Captioning requires CoCa based model."
             caption = self.clip_model.compute_caption_from_image(image)
-            metadata["caption"] = {
-                "model": f"{self.clip_model.model_version}+{self.clip_model.pretrained_weights}",
-                "caption": caption,
-            }
-
-        semseg_mask = None
-
-        if compute_instance_labels_onthology:
-            assert (
-                self.grounding_sam_model is not None
-            ), "Initialized Grounding-SAM model is required to 'compute_instance_segmentation'."
-
-            self.grounding_sam_model.set_ontology(CaptionOntology(compute_instance_labels_onthology))
-
-            detections = self.grounding_sam_model.predict(input=image)
-
-            # parse bbox 2d
-            box_metadata = {}
-            for idx, box_2d in enumerate(detections.xyxy):
-                confidence = detections.confidence[idx] if detections.confidence is not None else -1
-                if detections.class_id is not None:
-                    class_id = detections.class_id[idx]
-                    class_name = self.grounding_sam_model.ontology.classes()[class_id]
-                else:
-                    class_id = -1
-                    class_name = ""
-
-                box_metadata[f"box_{idx}"] = {
-                    "class_id": int(class_id),
-                    "class_name": str(class_name),
-                    "confidence": float(confidence),
-                    "box": box_2d.tolist(),
-                }
-            metadata["instance"] = {
-                "model": f"{self.grounding_sam_model}",
-                "onthology": self.grounding_sam_model.ontology.promptMap,
-                "bbox_2d": box_metadata,
-            }
-
-            # parse semseg mask
-            if detections.mask is not None and detections.mask.size > 0:
-                orig_image_shape_xy = np.shape(self.load_image(file_path, shape=None))[:2][::-1]
-
-                # convert bool masks to [0,255] uint8 and resize to original img shape
-                semseg_mask = np.transpose(detections.mask.astype(np.uint8) * 255, axes=(1, 2, 0))
-                semseg_mask = cv2.resize(semseg_mask, orig_image_shape_xy, interpolation=cv2.INTER_NEAREST)
-                if detections.mask.shape[0] == 1:
-                    semseg_mask = semseg_mask[..., None]
-                semseg_mask = [semseg_mask[..., idx] for idx in range(semseg_mask.shape[-1])]
+            metadata["caption"] = caption
 
         if compute_embedding:
-            assert self.clip_model is not None, "Initialized clip model is required to 'compute_embedding'."
             img_emb = self.clip_model.embed_image(image).tolist()
-            metadata["embedding"] = {
-                "model": f"{self.clip_model.model_version}+{self.clip_model.pretrained_weights}",
-                "embedding": img_emb,
-            }
+            metadata["embedding"] = img_emb
 
-        return metadata, semseg_mask
+        return metadata
 
-    def compute_autolabel_directory(
+    def compute_metadata_and_embedding_directory(
         self,
         directory: str,
         compute_embedding: bool = True,
         compute_caption: bool = True,
-        compute_instance_labels_onthology: dict[str, str] | None = None,
         save_path: str | None = None,
     ):
-        print(">> Running 'compute_autolabel_directory'")
+        print("\n>> Running 'compute_metadata_and_embedding_directory'")
 
         for file_path in tqdm(sorted(glob.glob(f"{directory}/**/*.png", recursive=True)), desc="Computing metadata"):
-            metadata, semseg_mask = self.compute_metadata_and_autolabel(
+            metadata = self.compute_metadata_and_embeddings(
                 file_path,
                 compute_embedding=compute_embedding,
                 compute_caption=compute_caption,
-                compute_instance_labels_onthology=compute_instance_labels_onthology,
             )
 
             if save_path is None:
@@ -131,38 +69,11 @@ class SemanticDatasetCreator:
             else:
                 dst_file = os.path.join(save_path, os.path.basename(file_path).replace(".png", "_metadata.json"))
 
-            # save semseg mask
-            if semseg_mask is not None:
-                for idx, mask in enumerate(semseg_mask):
-                    semseg_dst_file = dst_file.replace("_metadata.json", f"_semseg_mask_{idx}.png")
-                    cv2.imwrite(semseg_dst_file, mask)
-                    metadata["instance"]["bbox_2d"][f"box_{idx}"]["mask"] = semseg_dst_file
-
-                semseg_dst_file = dst_file.replace("_metadata.json", "_semseg_mask_stack.png")
-                stacked_mask = np.stack(semseg_mask).max(axis=0)
-                cv2.imwrite(semseg_dst_file, stacked_mask)
-                metadata["instance"]["full_semseg_mask"] = semseg_dst_file
-
             # save metadata
             with open(dst_file, "w", encoding="utf-8") as outfile_handle:
                 os.makedirs(os.path.dirname(dst_file), exist_ok=True)
                 json.dump(metadata, outfile_handle, indent=4)
             tqdm.write(f"Extracted file metadata to: {dst_file}")
-
-    def clear_directory(self, directory: str, clear_search: bool = False, clear_metadata_and_labels: bool = True):
-        print(">> Running 'clear_directory'")
-
-        search_files = []
-
-        if clear_search:
-            search_files.extend(sorted(glob.glob(f"{directory}/**/*.png", recursive=True)))
-
-        if clear_metadata_and_labels or clear_search:
-            search_files.extend(sorted(glob.glob(f"{directory}/**/*_metadata.json", recursive=True)))
-            search_files.extend(sorted(glob.glob(f"{directory}/**/*_semseg_mask*.png", recursive=True)))
-
-        for file_path in tqdm(search_files, desc="Cleaning metadata"):
-            os.remove(file_path)
 
     def text_search_directory(
         self,
@@ -171,7 +82,7 @@ class SemanticDatasetCreator:
         top_k: int = 5,
         save_path: str | None = None,
     ) -> dict[str, float]:
-        print(">> Running 'text_search_directory'")
+        print("\n>> Running 'text_search_directory'")
         assert self.clip_model is not None, "Initialized clip model is required to run this operation."
 
         text_emb_query = self.clip_model.embed_text(text_query)
@@ -179,13 +90,13 @@ class SemanticDatasetCreator:
         scores: dict[str, float] = {}
 
         for file_path in tqdm(sorted(glob.glob(f"{directory}/**/*.png", recursive=True)), desc="Searching text query"):
-            img_emb = self.clip_model.embed_image(self.load_image(file_path, shape=self.image_shape))
+            img_emb = self.clip_model.embed_image(load_image(file_path, shape=self.image_shape))
             img_score = self.clip_model.calculate_embed_similarity(text_emb_query, img_emb)
             scores[file_path] = img_score
 
         top_k_scores = dict(sorted(scores.items(), key=lambda x: x[1], reverse=True)[:top_k])
 
-        print(f"\nBest matches for text query '{text_query}':")
+        print(f"Best matches for text query '{text_query}':")
         for idx, (file, score) in enumerate(top_k_scores.items()):
             print(f" -> {idx}:   Score: {score:.02f}  |  File: {file}")
 
@@ -203,11 +114,11 @@ class SemanticDatasetCreator:
         top_k: int = 5,
         save_path: str | None = None,
     ) -> dict[str, float]:
-        print(">> Running 'image_search_directory'")
+        print("\n>> Running 'image_search_directory'")
         assert self.clip_model is not None, "Initialized clip model is required to run this operation."
 
         if isinstance(image_query, str) and os.path.isfile(image_query):
-            img_emb_query = self.clip_model.embed_image(self.load_image(image_query, shape=self.image_shape))
+            img_emb_query = self.clip_model.embed_image(load_image(image_query, shape=self.image_shape))
         elif isinstance(image_query, np.ndarray):
             img_emb_query = self.clip_model.embed_image(image_query)
         else:
@@ -216,15 +127,13 @@ class SemanticDatasetCreator:
         scores: dict[str, float] = {}
 
         for file_path in tqdm(sorted(glob.glob(f"{directory}/**/*.png", recursive=True)), desc="Searching img query"):
-            img_emb = self.clip_model.embed_image(self.load_image(file_path, shape=self.image_shape))
+            img_emb = self.clip_model.embed_image(load_image(file_path, shape=self.image_shape))
             img_score = self.clip_model.calculate_embed_similarity(img_emb_query, img_emb)
             scores[file_path] = img_score
 
         top_k_scores = dict(sorted(scores.items(), key=lambda x: x[1], reverse=True)[:top_k])
 
-        print(
-            f"\nBest matches for image query {image_query if isinstance(image_query, str) else np.shape(image_query)}:"
-        )
+        print(f"Best matches for image query {image_query if isinstance(image_query, str) else np.shape(image_query)}:")
         for idx, (file, score) in enumerate(top_k_scores.items()):
             print(f" -> {idx}:   Score: {score:.02f}  |  File: {file}")
 
@@ -235,12 +144,44 @@ class SemanticDatasetCreator:
 
         return top_k_scores
 
-    @staticmethod
-    def load_image(file_path: str, shape: tuple[int, int] | None = None) -> np.ndarray:
-        image = cv2.imread(file_path)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    def filter_similar_samples(
+        self,
+        directory: str,
+        similarity_threshold: float = 0.90,
+    ):
+        print("\n>> Running 'filter_similar_samples'")
+        file_embeddings: list[tuple[str, np.ndarray]] = []
 
-        if shape is not None:
-            image = cv2.resize(image, shape, interpolation=cv2.INTER_AREA)
+        # get embeddings for all files (try to get from metadata if available, else compute)
+        for file_path in sorted(glob.glob(f"{directory}/**/*.png", recursive=True)):
+            metadata_file = file_path.replace(".png", "_metadata.json")
+            if os.path.isfile(metadata_file):
+                with open(metadata_file, "r", encoding="utf-8") as json_handle:
+                    embedding = np.array(json.load(json_handle)["embedding"], dtype=np.float32)
+            else:
+                image = load_image(file_path)
+                embedding = self.clip_model.embed_image(image)
 
-        return image
+            file_embeddings.append((file_path, embedding))
+
+        # go through all combination pairs and filter if similar
+        removed_list: list[str] = []
+        for idx1, idx2 in tqdm(list(itertools.combinations(range(len(file_embeddings)), 2)), desc="Filtering similar"):
+            filename1, emb1 = file_embeddings[idx1]
+            filename2, emb2 = file_embeddings[idx2]
+
+            if filename2 in removed_list:
+                continue
+
+            similarity = cosine_similarity(emb1, emb2)
+
+            if similarity > similarity_threshold:
+                os.remove(filename2)
+                metadata2_file = filename2.replace(".png", "_metadata.json")
+                if os.path.isfile(metadata2_file):
+                    os.remove(metadata2_file)
+                removed_list.append(filename2)
+                tqdm.write(
+                    f"Deleted '{os.path.basename(filename2)}' as it had high similarity ({similarity.item():.02f}) "
+                    f"to '{os.path.basename(filename1)}'."
+                )
