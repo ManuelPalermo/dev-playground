@@ -1,4 +1,3 @@
-import glob
 import itertools
 import json
 import os
@@ -8,7 +7,7 @@ from typing import Any
 import numpy as np
 import torch
 from ds_creator.clip_image_search import ClipModel
-from ds_creator.utils import load_image
+from ds_creator.utils import glob_images, load_image
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 
@@ -57,7 +56,7 @@ class SemanticDatasetCreator:
     ):
         print("\n>> Running 'compute_metadata_and_embedding_directory'")
 
-        for file_path in tqdm(sorted(glob.glob(f"{directory}/**/*.png", recursive=True)), desc="Computing metadata"):
+        for file_path in tqdm(glob_images(directory), desc="Computing metadata"):
             metadata = self.compute_metadata_and_embeddings(
                 file_path,
                 compute_embedding=compute_embedding,
@@ -89,7 +88,7 @@ class SemanticDatasetCreator:
 
         scores: dict[str, float] = {}
 
-        for file_path in tqdm(sorted(glob.glob(f"{directory}/**/*.png", recursive=True)), desc="Searching text query"):
+        for file_path in tqdm(glob_images(directory), desc="Searching text query"):
             img_emb = self.clip_model.embed_image(load_image(file_path, shape=self.image_shape))
             img_score = self.clip_model.calculate_embed_similarity(text_emb_query, img_emb)
             scores[file_path] = img_score
@@ -126,7 +125,7 @@ class SemanticDatasetCreator:
 
         scores: dict[str, float] = {}
 
-        for file_path in tqdm(sorted(glob.glob(f"{directory}/**/*.png", recursive=True)), desc="Searching img query"):
+        for file_path in tqdm(glob_images(directory), desc="Searching img query"):
             img_emb = self.clip_model.embed_image(load_image(file_path, shape=self.image_shape))
             img_score = self.clip_model.calculate_embed_similarity(img_emb_query, img_emb)
             scores[file_path] = img_score
@@ -153,7 +152,7 @@ class SemanticDatasetCreator:
         file_embeddings: list[tuple[str, np.ndarray]] = []
 
         # get embeddings for all files (try to get from metadata if available, else compute)
-        for file_path in sorted(glob.glob(f"{directory}/**/*.png", recursive=True)):
+        for file_path in glob_images(directory):
             metadata_file = file_path.replace(".png", "_metadata.json")
             if os.path.isfile(metadata_file):
                 with open(metadata_file, "r", encoding="utf-8") as json_handle:
