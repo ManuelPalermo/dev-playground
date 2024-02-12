@@ -9,7 +9,7 @@ import requests
 from tqdm import tqdm
 
 PIXABAY_API = "https://pixabay.com/api/?key="
-PIXABAY_API_KEY = "42065936-c06a1f655912e8c7a8274419f"  # NOTE: login and add you key here
+PIXABAY_API_KEY = ""  # NOTE: login and add you key here
 
 
 def download_images(keywords: list[str], save_path: str = "./data/images/", num: int = 5) -> None:
@@ -40,12 +40,12 @@ def download_images(keywords: list[str], save_path: str = "./data/images/", num:
 def main():
     """Run main entrypoint."""
     queries = (
-        # ("./data/images/humans", ["humans", "playing"], 10),
-        # ("./data/images/humans", ["humans", "sport"], 10),
-        # ("./data/images/cars", ["cars", "highway"], 20),
-        # ("./data/images/dogs", ["dogs", "playful"], 10),
-        # ("./data/images/cats", ["cats", "playful"], 10),
-        # ("./data/images/birds", ["birds", "colorful", "nature"], 10),
+        ("./data/images/humans", ["humans", "playing"], 10),
+        ("./data/images/humans", ["humans", "sport"], 10),
+        ("./data/images/cars", ["cars", "highway"], 20),
+        ("./data/images/dogs", ["dogs", "playful"], 10),
+        ("./data/images/cats", ["cats", "playful"], 10),
+        ("./data/images/birds", ["birds", "colorful", "nature"], 10),
         ("./data/images/mixed", ["humans", "petting", "animal"], 20),
     )
 

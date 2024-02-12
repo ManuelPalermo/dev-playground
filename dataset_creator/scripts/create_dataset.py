@@ -1,6 +1,8 @@
+import os
+
 from ds_creator.autolabelling import AutoLabellerDepthAnything, AutoLabellerGroundingSAM
 from ds_creator.semantic_dataset_creator import SemanticDatasetCreator
-from ds_creator.utils import OUTPUT_ARTIFACT_PATTERNS, clear_directory
+from ds_creator.utils import OUTPUT_ARTIFACT_PATTERNS, clear_directory, save_images_in_grid
 
 
 def main():
@@ -18,8 +20,8 @@ def main():
         src=src,
         dst=dst,
         search=True,
-        extract_metadata=True,
         filter_similar=True,
+        extract_metadata=True,
     )
 
     # Autolabel selected images (GroundingSAM: bbox2d + semseg masks | DepthAnything: depth)
@@ -43,39 +45,68 @@ def select_images(
 
     if search:
         # search best matches in directory for a given text query
+        ###
+        query = "petting: a real image with a human petting an animal (e.g. cat, dog)"
+        query_save_path = os.path.join(dst, query.split(":")[0])
         semantic_search.text_search_directory(
             directory=src,
-            save_path=dst,
-            text_query="a real image with a human petting an animal (e.g. cat, dog)",
+            save_path=query_save_path,
+            text_query=query,
             top_k=5,
         )
-        semantic_search.text_search_directory(
-            directory=src,
-            save_path=dst,
-            text_query="a complex image with humans",
-            top_k=10,
-        )
-        semantic_search.text_search_directory(
-            directory=src,
-            save_path=dst,
-            text_query="a scene with multiple visisble cars, possibly with humans nearby",
-            top_k=5,
-        )
-        # search best matches in directory for a given image
-        semantic_search.image_search_directory(
-            directory=src,
-            save_path=dst,
-            image_query="./data/images/birds/b86ab31a85c9d98991b99dd73283326d.png",
-            top_k=3,
+        save_images_in_grid(
+            images_or_directory=query_save_path,
+            cols=5,
+            save_path=f"./results/semantic_search/text_search_{query.split(':')[0]}.png",
+            title=query,
         )
 
-    if extract_metadata:
-        # process image directory and compute metadata (image embeddings, captions)
-        semantic_search.compute_metadata_and_embedding_directory(
-            directory=dst,
-            save_path=dst,
-            compute_embedding=True,
-            compute_caption=True,
+        ###
+        query = "humans: a complex scene with humans"
+        query_save_path = os.path.join(dst, query.split(":")[0])
+        semantic_search.text_search_directory(
+            directory=src,
+            save_path=query_save_path,
+            text_query=query,
+            top_k=10,
+        )
+        save_images_in_grid(
+            images_or_directory=query_save_path,
+            cols=5,
+            save_path=f"./results/semantic_search/text_search_{query.split(':')[0]}.png",
+            title=query,
+        )
+
+        ###
+        query = "cars: a scene with multiple visible cars, possibly with humans nearby"
+        query_save_path = os.path.join(dst, query.split(":")[0])
+        semantic_search.text_search_directory(
+            directory=src,
+            save_path=query_save_path,
+            text_query=query,
+            top_k=5,
+        )
+        save_images_in_grid(
+            images_or_directory=query_save_path,
+            cols=5,
+            save_path=f"./results/semantic_search/text_search_{query.split(':')[0]}.png",
+            title=query,
+        )
+
+        # search best matches in directory for a given image
+        query = "./data/images/birds/b86ab31a85c9d98991b99dd73283326d.png"
+        query_save_path = os.path.join(dst, "bird")
+        semantic_search.image_search_directory(
+            directory=src,
+            save_path=query_save_path,
+            image_query="./data/images/birds/b86ab31a85c9d98991b99dd73283326d.png",
+            top_k=4,
+        )
+        save_images_in_grid(
+            images_or_directory=query_save_path,
+            cols=4,
+            save_path="./results/semantic_search/text_search_bird.png",
+            title=query,
         )
 
     if filter_similar:
@@ -83,6 +114,15 @@ def select_images(
         semantic_search.filter_similar_samples(
             directory=dst,
             similarity_threshold=0.90,
+        )
+
+    if extract_metadata:
+        # process image directory and compute metadata (image embeddings, captions)
+        semantic_search.compute_metadata_and_embedding_directory(
+            directory=dst,
+            save_path=None,
+            compute_embedding=True,
+            compute_caption=True,
         )
 
 
@@ -95,7 +135,7 @@ def autolabel(
     if depth:
         # DepthAnything: depth image
         depthanything_model = AutoLabellerDepthAnything()
-        depthanything_model.autolabel_directory(directory=src, save_path=dst)
+        depthanything_model.autolabel_directory(directory=src, save_path=None)
         del depthanything_model
 
     if instance_segmentation:
@@ -128,7 +168,7 @@ def autolabel(
         class_onthology[unknown_classes_prompt] = "unknown"
 
         grounding_sam_model = AutoLabellerGroundingSAM(grounding_sam_class_onthology=class_onthology, image_shape=None)
-        grounding_sam_model.autolabel_directory(directory=src, save_path=dst)
+        grounding_sam_model.autolabel_directory(directory=src, save_path=None)
         del grounding_sam_model
 
 
