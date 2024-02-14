@@ -1,15 +1,20 @@
 import glob
 import os
 import shutil
+import textwrap
 from itertools import chain
 from typing import Sequence
 
 import cv2
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image, ImageDraw, ImageFont
 from tqdm import tqdm
 
-OUTPUT_ARTIFACT_PATTERNS = ("_metadata.json", "_box2*", "_semseg*", "_instseg*", "_depth*")
+matplotlib.use("Agg")
+
+OUTPUT_ARTIFACT_PATTERNS = ("_metadata.json", "_caption*", "_box2*", "_semseg*", "_instseg*", "_depth*")
 
 
 def load_image(file_path: str, shape: tuple[int, int] | None = None) -> np.ndarray:
@@ -53,6 +58,29 @@ def clear_directory(directory: str, clear_search: bool = False, clear_patterns: 
             os.remove(file_path)
 
 
+def draw_text_as_image(text: str, save_path: str, image_size=(128, 128)):
+
+    # wrap text to max size
+    paragraph = textwrap.wrap(text, width=image_size[0] // 6)
+
+    # create white canvas
+    image = Image.new("L", image_size, color=255)
+    font = ImageFont.load_default()
+    draw = ImageDraw.Draw(image)
+
+    # Create a new font with the desired size
+    cur_y, pad = (image_size[1] // 5), 10
+    for line in paragraph:
+        text_width = draw.textlength(text=line, font=font)
+        text_height = 10
+        cur_x = (image_size[0] - text_width) // 2
+        draw.text((cur_x, cur_y), line, font=font, fill=0)
+        cur_y += text_height + pad
+
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    image.save(save_path)
+
+
 def save_images_in_grid(
     images_or_directory: list[str] | str,
     cols: int,
@@ -82,7 +110,6 @@ def save_images_in_grid(
             axes[idx].imshow(image)
             axes[idx].axis("off")
             axes[idx].set_aspect("auto")
-
             # axes[idx].set_aspect("equal")  # Set the aspect ratio of each subplot to be equal
         else:
             axes[idx].axis("off")  # Remove empty plots for leftover squares
@@ -107,21 +134,11 @@ def save_images_in_grid(
     print(f"Saved grid image to: {save_path}")
 
 
-def run():
-    class_images_dict = {
-        "birds": glob_images("./dataset_creator/data/images/birds"),
-        "cats": glob_images("./dataset_creator/data/images/cats"),
-        "dogs": glob_images("./dataset_creator/data/images/dogs"),
-        "humans": glob_images("./dataset_creator/data/images/humans"),
-        "mixed": glob_images("./dataset_creator/data/images/mixed"),
-        "cars": glob_images("./dataset_creator/data/images/cars"),
+def gather_images_and_labels(directory: str, label_patterns: list[str]) -> dict[str, list[str]]:
+    collected = {
+        "images": glob_images(directory),
     }
+    for pattern in label_patterns:
+        collected[pattern] = glob2(directory, match_patterns=(pattern,), ignore_patterns=())
 
-    for class_name, image_list in class_images_dict.items():
-        save_images_in_grid(
-            image_list,
-            cols=4,
-            save_path=f"/home/palermo/workspace/dataset_creator/results/input_data_grid_{class_name}.png",
-            title=class_name.capitalize(),
-            # title="/home/palermo/workspace/dataset_creator/data/images/birds/b86ab31a85c9d98991b99dd73283326d.png",
-        )
+    return collected

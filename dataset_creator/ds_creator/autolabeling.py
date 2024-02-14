@@ -23,13 +23,13 @@ class AutoLabellerModel(abc.ABC):
         self.model = model
         self.image_shape = image_shape
 
-    def autolabel_directory(self, directory: str, save_path: str):
+    def autolabel_directory(self, directory: str, save_path: str | None):
         print(f"\n>>  Running '{self.NAME}.autolabel_directory'")
-        for file_path in tqdm(glob_images(directory), desc="Computing metadata"):
+        for file_path in tqdm(glob_images(directory), desc="Autolabeling"):
             self.label_data(file_path, save_path)
 
     @torch.inference_mode()
-    def label_data(self, filepath: str, save_path: str):
+    def label_data(self, filepath: str, save_path: str | None):
         assert self.model is not None
         image = load_image(filepath, shape=self.image_shape)
         outputs = self.predict(image)
@@ -40,7 +40,7 @@ class AutoLabellerModel(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def process_and_save_labels(self, outputs: Any, filepath: str, save_path: str) -> None:
+    def process_and_save_labels(self, outputs: Any, filepath: str, save_path: str | None) -> None:
         pass
 
 
@@ -63,7 +63,7 @@ class AutoLabellerGroundingSAM(AutoLabellerModel):
         predictions = predictions.with_nms(threshold=0.7, class_agnostic=False)  # filter same class boxes
         return predictions
 
-    def process_and_save_labels(self, outputs: sv.Detections, filepath: str, save_path: str) -> None:
+    def process_and_save_labels(self, outputs: sv.Detections, filepath: str, save_path: str | None) -> None:
         orig_image = load_image(filepath, shape=None)
         orig_image_shape_xy = np.shape(orig_image)[:2][::-1]
         if self.image_shape is None:
@@ -119,7 +119,7 @@ class AutoLabellerGroundingSAM(AutoLabellerModel):
         self.save_labels(box_labels, semseg_mask, filepath, save_path)
         self.visualize_predictions(orig_image, outputs, semseg_mask, filepath, save_path)
 
-    def save_labels(self, box_labels, semseg_mask, filepath: str, save_path: str) -> None:
+    def save_labels(self, box_labels, semseg_mask, filepath: str, save_path: str | None) -> None:
         # save path bbox
         dst_file_bbox = (
             filepath.replace(".png", "_box2d.json")
@@ -148,7 +148,7 @@ class AutoLabellerGroundingSAM(AutoLabellerModel):
         detections: sv.Detections,
         semseg_mask: np.ndarray | None,
         filepath: str,
-        save_path: str,
+        save_path: str | None,
     ) -> None:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -211,7 +211,7 @@ class AutoLabellerDepthAnything(AutoLabellerModel):
         pil_img = Image.fromarray(image)
         return self.model(pil_img)["depth"]
 
-    def process_and_save_labels(self, outputs: Any, filepath: str, save_path: str) -> None:
+    def process_and_save_labels(self, outputs: Any, filepath: str, save_path: str | None) -> None:
         orig_img = load_image(filepath, shape=None)
         orig_image_shape_xy = np.shape(orig_img)[:2][::-1]
 

@@ -7,7 +7,7 @@ from typing import Any
 import numpy as np
 import torch
 from ds_creator.clip_image_search import ClipModel
-from ds_creator.utils import glob_images, load_image
+from ds_creator.utils import draw_text_as_image, glob_images, load_image
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 
@@ -40,6 +40,7 @@ class SemanticDatasetCreator:
             assert "coca" in self.clip_model.model_version.lower(), "Captioning requires CoCa based model."
             caption = self.clip_model.compute_caption_from_image(image)
             metadata["caption"] = caption
+            draw_text_as_image(text=caption, save_path=file_path.replace(".png", "_caption.png"))
 
         if compute_embedding:
             img_emb = self.clip_model.embed_image(image).tolist()

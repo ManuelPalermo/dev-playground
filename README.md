@@ -24,6 +24,6 @@ Simple development playground to quickly try random stuff. Features include:
 
 - **diffusion**: data generation using DDPMs (conditional and unconditional generation).
 
-- **dataset_creator**: CLIP based text and image search over an image directory and image autolabelling.
+- **dataset_creator**: CLIP based text and image search over an image directory and autolabeling.
 
 - **dataset_selection**: Selecting of most diverse images of a directory based on similarity algorithm (classical CV).

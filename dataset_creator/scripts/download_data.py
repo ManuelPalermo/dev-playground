@@ -6,6 +6,7 @@ import os
 import cv2
 import numpy as np
 import requests
+from ds_creator.utils import glob_images, save_images_in_grid
 from tqdm import tqdm
 
 PIXABAY_API = "https://pixabay.com/api/?key="
@@ -37,16 +38,27 @@ def download_images(keywords: list[str], save_path: str = "./data/images/", num:
         tqdm.write(f"Downloaded file from: '{each['userImageURL']}' to {outfile}")
 
 
+def plot_input_images(search_path: str, title: str, save_path: str):
+    image_list = glob_images(search_path)
+    save_images_in_grid(
+        image_list,
+        cols=5,
+        save_path=save_path,
+        title=title,
+    )
+
+
 def main():
     """Run main entrypoint."""
     queries = (
-        ("./data/images/humans", ["humans", "playing"], 10),
-        ("./data/images/humans", ["humans", "sport"], 10),
-        ("./data/images/cars", ["cars", "highway"], 20),
+        ("./data/images/humans", ["humans", "playing"], 20),
+        ("./data/images/humans", ["humans", "sport"], 20),
+        ("./data/images/humans", ["humans", "crowd"], 10),
+        ("./data/images/cars", ["cars", "traffic"], 30),
         ("./data/images/dogs", ["dogs", "playful"], 10),
         ("./data/images/cats", ["cats", "playful"], 10),
         ("./data/images/birds", ["birds", "colorful", "nature"], 10),
-        ("./data/images/mixed", ["humans", "petting", "animal"], 20),
+        ("./data/images/petting", ["humans", "petting", "animal"], 20),
     )
 
     for save_path, keywords, num in queries:
@@ -54,6 +66,11 @@ def main():
             keywords=keywords,
             save_path=save_path,
             num=num,
+        )
+
+        title = os.path.split(save_path)[-1]
+        plot_input_images(
+            search_path=save_path, title=title.capitalize(), save_path=f"./results/download/input_data_grid_{title}.png"
         )
 
 
