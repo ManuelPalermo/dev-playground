@@ -2,19 +2,19 @@ import os
 from itertools import chain
 
 from ds_creator.autolabeling import AutoLabellerDepthAnything, AutoLabellerGroundingSAM
-from ds_creator.utils import OUTPUT_ARTIFACT_PATTERNS, gather_images_and_labels, save_images_in_grid
+from ds_creator.utils import gather_images_and_labels, save_images_in_grid
 
 
 def main():
-    src = "./data/images/"
+    #src = "./data/images/"
     dst = "./data/output/search"
 
     # clear old data
-    # clear_directory(
-    #    directory=dst,
-    #    clear_search=False,
-    #    clear_patterns=OUTPUT_ARTIFACT_PATTERNS,
-    # )
+    #clear_directory(
+    #   directory=dst,
+    #   clear_search=False,
+    #   clear_patterns=OUTPUT_ARTIFACT_PATTERNS,
+    #)
 
     # autolabel selected images (GroundingSAM: bbox2d + semseg masks | DepthAnything: depth)
     autolabel(
