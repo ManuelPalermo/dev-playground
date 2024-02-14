@@ -1,0 +1,25 @@
+name: env_ds_creator
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pytorch=2.1.0=py3.10_cuda12.1_cudnn8.9.2_0
+  - pytorch-cuda=12.1
+  - torchvision=0.16.0=py310_cu121
+  - opencv=4.9
+  - torchinfo
+  - matplotlib
+  - pip
+  - pip:
+      - einops
+      - torcheval
+      - hydra-core
+      - open_clip_torch
+      - transformers # git+https://github.com/huggingface/transformers.git (transformers-4.38.0.dev needed)
+      - autodistill
+      - autodistill-grounded-sam
+      - roboflow
+      - scikit-learn

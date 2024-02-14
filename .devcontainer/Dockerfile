@@ -8,7 +8,7 @@
 # - xauth/X11
 # - miniconda
 
-FROM nvidia/cuda:11.7.0-cudnn8-devel-ubuntu22.04
+FROM nvidia/cuda:12.3.1-devel-ubuntu22.04
 
 ARG USER=user
 ENV UID=1000
@@ -90,8 +90,6 @@ RUN sudo apt-get update && sudo apt-get install -y \
     black \
     isort \
     sphinx \
-    tomli \
-    ipython \
     && sudo rm -rf /var/lib/apt/lists/* && sudo rm -rf /var/cache/apt && sudo apt-get clean
 
 # install shell code checking/formatting tools
