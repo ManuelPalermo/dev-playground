@@ -1,7 +1,7 @@
 
 # Description
 
-Experiments with CLIP based image search for dataset creation and foundational models for image autolabelling
+Experiments with CLIP based image search for dataset creation and foundational models for image autolabeling
 
 # Setup and usage
 
@@ -16,7 +16,8 @@ pip install -e .
 ```bash
 # then it should be possible to run existing scripts
 python scripts/download_data.py
-python scripts/create_dataset.py
+python scripts/select_dataset.py
+python scripts/autolabel_dataset.py
 ```
 
 # Results
@@ -24,21 +25,49 @@ python scripts/create_dataset.py
 <details><summary> Data Lake </summary>
 
 - ```python scripts/download_data.py```
-- Total images: TODO:
+
+- Total images:
+
+![alt text](results/download/input_data_grid_cars.png)
+![alt text](results/download/input_data_grid_humans.png)
+![alt text](results/download/input_data_grid_petting.png)
+![alt text](results/download/input_data_grid_cats.png)
+![alt text](results/download/input_data_grid_dogs.png)
+![alt text](results/download/input_data_grid_birds.png)
 
 </details>
 
 <details><summary> Data Selection </summary>
 
-- ```python scripts/create_dataset.py```
-- Total images: TODO:
+- ```python scripts/select_dataset.py```
+
+- Rough Inference Times (RTX 3070 laptop):
+  - CLIP img/text embedding: ~0.06s / it (~15it/s)
+
+- Selected images:
+
+![alt text](results/selection/text_search_cars.png)
+![alt text](results/selection/text_search_humans.png)
+![alt text](results/selection/text_search_petting.png)
+![alt text](results/selection/image_search_bird.png)
 
 </details>
 
-<details><summary> AutoLabelling </summary>
+<details><summary> Autolabeling </summary>
 
-- ```python scripts/create_dataset.py``` TODO:
-- Total images: TODO:
+- ```python scripts/autolabel_dataset.py``` TODO:
+
+- Rough Inference Times (RTX 3070 laptop):
+  - DepthAnything: ~0.35s / it (~2.8it/s)
+  - GroundingSAM:  ~17s   / it (scales ~linearly with instances to detect in `class_onthology`)
+  - COCA:          ~1s    / it
+
+- Autolabeled images:
+
+![alt text](results/autolabeling/autolabeling_cars.png)
+![alt text](results/autolabeling/autolabeling_humans.png)
+![alt text](results/autolabeling/autolabeling_petting.png)
+![alt text](results/autolabeling/autolabeling_bird.png)
 
 </details>
 
@@ -51,9 +80,9 @@ python scripts/create_dataset.py
   - [x] image based search
   - [x] text based search
   - [x] similarity based filtering
-- GT Autolabelling
+- GT Autolabeling
   - [x] ImageCaptions                         (based on COCA model)
-  - [x] BBox + SemSeg + InstanceSegmentation  (based on Grounding-Sam)
+  - [x] BBox + InstanceSegmentation           (based on Grounding-Sam)
   - [x] Depth                                 (based on DepthAnything)
 
 # References
