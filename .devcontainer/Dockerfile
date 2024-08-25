@@ -101,6 +101,9 @@ RUN sudo apt-get update && sudo apt-get install -y \
     libgl1-mesa-glx \
     && sudo rm -rf /var/lib/apt/lists/* && sudo rm -rf /var/cache/apt && sudo apt-get clean
 
+# install oh-my-bash for a better shell
+RUN bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)" --unattended
+
 # install miniconda for DL related tasks
 RUN mkdir -p ~/miniconda3/ \
     && wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
