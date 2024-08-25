@@ -51,7 +51,6 @@ class PointwiseNet(Module):
             ts:  Time. (B, ).
             cls: Class. (B, ).
         """
-
         batch_size = x.size(0)
 
         ctx = ctx[:, None, :]  # (B, 1, F)
@@ -144,7 +143,6 @@ class PointNet(Module):
             ts:  Time. (B, ).
             cls: Class. (B, ).
         """
-
         x = x.permute((0, 2, 1))  # (B, D, N) -> (B, N, D)
 
         ctx = self.encoder(x)

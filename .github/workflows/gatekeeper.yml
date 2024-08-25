@@ -40,10 +40,10 @@ jobs:
               mypy
 
       - name: "Check format: ruff"
-        run: python -m ruff format ${{env.CHANGED_PYTHON_FILES}}"
+        run: python -m ruff format ${{env.CHANGED_PYTHON_FILES}}
 
       - name: "Check SCA: ruff"
-        run: python -m ruff check ${{env.CHANGED_PYTHON_FILES}} --output-format=github"
+        run: python -m ruff check ${{env.CHANGED_PYTHON_FILES}} --output-format=github
 
       - name: "Check SCA: mypy"
         run: python -m mypy ${{env.CHANGED_PYTHON_FILES}} --config="pyproject.toml"

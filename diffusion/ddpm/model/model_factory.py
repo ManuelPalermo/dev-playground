@@ -1,10 +1,11 @@
 from typing import Optional
 
 import torch
+from torchinfo import summary
+
 from ddpm.model.model_2d.unet_attn import UNet
 from ddpm.model.model_3d.point_e import PointDiffusionTransformer
 from ddpm.model.model_3d.point_net import PointNet
-from torchinfo import summary
 
 
 def get_model(
@@ -19,7 +20,6 @@ def get_model(
     context_dim: Optional[int] = None,
 ) -> torch.nn.Module:
     """Creates model based opn config, supports 2D image models as well as 3D pointcloud models."""
-
     # 2D models:
     if model_name == "UNet2d":
         assert data_type == "img"

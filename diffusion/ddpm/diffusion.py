@@ -48,7 +48,7 @@ class GaussianDiffusion:
                 device=self.device,
             )
 
-        elif self.schedule == "cosine":
+        if self.schedule == "cosine":
             # Cosine schedule from improved diffusion
             # https://github.com/openai/improved-diffusion/blob/main/improved_diffusion/gaussian_diffusion.py
             max_beta = torch.tensor(1 - self.beta_T)
@@ -60,8 +60,7 @@ class GaussianDiffusion:
             betas = torch.minimum(1 - alpha_bar(t2) / alpha_bar(t1), max_beta)
             return betas
 
-        else:
-            raise NotImplementedError(f"Unknown noise schedule: {self.schedule}")
+        raise NotImplementedError(f"Unknown noise schedule: {self.schedule}")
 
     def forward_diffusion(self, x0: torch.Tensor, timesteps: torch.Tensor):
         """Performs forward diffusion, returning corrupted samples and noise applied at a given timestep.

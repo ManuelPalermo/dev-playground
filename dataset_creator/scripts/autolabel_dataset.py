@@ -6,15 +6,15 @@ from ds_creator.utils import gather_images_and_labels, save_images_in_grid
 
 
 def main():
-    #src = "./data/images/"
+    # src = "./data/images/"
     dst = "./data/output/search"
 
     # clear old data
-    #clear_directory(
+    # clear_directory(
     #   directory=dst,
     #   clear_search=False,
     #   clear_patterns=OUTPUT_ARTIFACT_PATTERNS,
-    #)
+    # )
 
     # autolabel selected images (GroundingSAM: bbox2d + semseg masks | DepthAnything: depth)
     autolabel(
@@ -41,19 +41,14 @@ def autolabel(
         # GroundingSAM: box2d + semseg
         class_onthology = {
             "cat": "cat",
-            #
             "dog": "dog",
-            #
             "exotic bird": "bird",
             "poultry bird": "bird",
-            #
             "any animal in the image which is not a pet (exclude any: cat, dog, bird)": "animal",
-            #
             "car": "vehicle",
             "bus": "vehicle",
             "motorbike": "vehicle",
             "vehicle": "vehicle",
-            #
             "human": "human",
             "person": "human",
             "man": "human",
@@ -78,7 +73,6 @@ def autolabel(
         **{f"autolabeling_{subdir_class}": os.path.join(dst, subdir_class) for subdir_class in os.listdir(dst)},
     }
     for visu_name, visu_dir in visu_dirs.items():
-
         img_and_labels = gather_images_and_labels(
             directory=visu_dir,
             label_patterns=["_depth.png", "_instseg.png", "_semseg.png", "_caption.png"],

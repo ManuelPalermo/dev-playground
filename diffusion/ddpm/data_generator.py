@@ -57,10 +57,9 @@ class CacheRepeatDataset(Dataset):
 
         if orig_idx in self._cache:
             return self._cache[orig_idx]  # sample from cache
-        else:
-            sample = self.dataset.__getitem__(orig_idx)  # sample for original dataset
-            self._cache[orig_idx] = sample  # cache sample for original dataset
-            return sample
+        sample = self.dataset.__getitem__(orig_idx)  # sample for original dataset
+        self._cache[orig_idx] = sample  # cache sample for original dataset
+        return sample
 
 
 def get_dataset_image(
