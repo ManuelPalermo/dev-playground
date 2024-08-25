@@ -1,10 +1,14 @@
 # Dev Playground
 
-Simple development playground to quickly try random stuff. Features include:
+Simple containerized environment to quickly try random stuff, with a focus on python and deep learning tools.
+
+Also includes some [experiments and results](#explored-topics).
+
+## Features
 
 - Dockerfile:
   - ubuntu22.04
-  - nvidia-cuda11.7
+  - nvidia-cuda12.6
   - cpp tools
   - python tools
   - shell tools
@@ -20,10 +24,10 @@ Simple development playground to quickly try random stuff. Features include:
 
 ---
 
-# Explored topics
+## Explored topics
 
-- **diffusion**: data generation using DDPMs (conditional and unconditional generation).
+- **[diffusion](./diffusion/README.md)**: data generation using DDPMs (conditional and unconditional generation).
 
-- **dataset_creator**: CLIP based text and image search over an image directory and autolabeling.
+- **[dataset_creator](./dataset_creator/README.md)**: CLIP based text and image search over an image directory and autolabeling using foundational models.
 
 - **dataset_selection**: Selecting of most diverse images of a directory based on similarity algorithm (classical CV).

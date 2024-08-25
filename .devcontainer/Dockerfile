@@ -1,19 +1,20 @@
 
 # After build contains:
 # - ubuntu22.04
-# - nvidia-cuda11.7
+# - nvidia-cuda12.6
 # - cpp tools
 # - python tools
 # - shell tools
 # - xauth/X11
 # - miniconda
 
-FROM nvidia/cuda:12.3.1-devel-ubuntu22.04
+FROM nvidia/cuda:12.6.0-cudnn-devel-ubuntu22.04
 
 ARG USER=user
 ENV UID=1000
 ENV GID=${UID}
 ENV HOME=/home/${USER}
+ENV WORKSPACE_NAME="dev-playground"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -30,7 +31,7 @@ RUN sudo apt-get update && sudo apt-get install -y \
     && sudo locale-gen en_US.UTF-8 \
     && sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 \
     && sudo rm -rf /var/lib/apt/lists/* && sudo  rm -rf /var/cache/apt && sudo apt-get clean
-ENV LANG en_US.UTF-8
+ENV LANG=en_US.UTF-8
 
 # install timezone
 RUN sudo ln -fs /usr/share/zoneinfo/UTC /etc/localtime \
@@ -82,13 +83,9 @@ RUN sudo apt-get update && sudo apt-get install -y \
     && sudo rm -rf /var/lib/apt/lists/* && sudo rm -rf /var/cache/apt && sudo apt-get clean
 
 # install python code checking/formatting/testing tools
-RUN sudo apt-get update && sudo apt-get install -y \
-    pylint \
-    flake8 \
-    pydocstyle \
+RUN pip3 install \
+    ruff \
     mypy \
-    black \
-    isort \
     sphinx \
     && sudo rm -rf /var/lib/apt/lists/* && sudo rm -rf /var/cache/apt && sudo apt-get clean
 
@@ -105,8 +102,8 @@ RUN sudo apt-get update && sudo apt-get install -y \
     && sudo rm -rf /var/lib/apt/lists/* && sudo rm -rf /var/cache/apt && sudo apt-get clean
 
 # install miniconda for DL related tasks
-RUN mkdir -p ~/miniconda3/
-RUN wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+RUN mkdir -p ~/miniconda3/ \
+    && wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
     -O ~/miniconda3/Miniconda3-latest-Linux-x86_64.sh \
     && bash ~/miniconda3/Miniconda3-latest-Linux-x86_64.sh -b -u
 
@@ -115,4 +112,4 @@ ENV DEBIAN_FRONTEND=
 
 
 USER ${USER}
-RUN mkdir -p /home/${USER}/workspace
+RUN mkdir -p /home/${USER}/${WORKSPACE_NAME}

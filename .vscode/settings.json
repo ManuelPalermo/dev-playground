@@ -7,7 +7,6 @@
     "editor.codeLens": true,
     "editor.rulers": [
         79,
-        99,
         119
     ],
     "files.eol": "\n",
@@ -43,5 +42,8 @@
     "cSpell.diagnosticLevel": "Hint",
     "cSpell.language": "en",
     "cSpell.logLevel": "Information",
-    "python.analysis.typeCheckingMode": "basic"
+    "python.analysis.typeCheckingMode": "basic",
+    "[dockerfile]": {
+        "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+    }
 }
