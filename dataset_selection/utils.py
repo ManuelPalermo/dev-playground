@@ -1,5 +1,6 @@
 import glob
-from typing import Any, List, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import cv2
 import imutils
@@ -64,7 +65,7 @@ def load_image_raw(path: str):
     return img
 
 
-def load_image_preprocess(path: str) -> Optional[NDArray[np.uint8]]:
+def load_image_preprocess(path: str) -> NDArray[np.uint8] | None:
     """Loads an image from path."""
     img = load_image_raw(path)
 
@@ -92,7 +93,7 @@ def visualize_image(
     cv2.waitKey(wait_ms)
 
 
-def draw_countours(img: NDArray[np.uint8], cnts: List[Any]):
+def draw_countours(img: NDArray[np.uint8], cnts: list[Any]):
     """Draws contours on the image."""
     img_cnts = img.copy()
     img_cnts = cv2.drawContours(img_cnts, cnts, -1, (0, 255, 255), 2)
@@ -105,7 +106,7 @@ def find_folder_images(path: str):
     return img_files
 
 
-def split_list_in_chunks(lst: Sequence[Any], chunk_size: Optional[int] = None) -> List[Sequence[Any]]:
+def split_list_in_chunks(lst: Sequence[Any], chunk_size: int | None = None) -> list[Sequence[Any]]:
     """Splits a list into chunks of desired size."""
     if chunk_size is None:
         chunk_size = len(lst)

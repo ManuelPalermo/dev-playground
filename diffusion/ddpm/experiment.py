@@ -1,5 +1,4 @@
 import os
-from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -25,7 +24,7 @@ class DiffusionExperiment:
         num_classes: int,
         device,
         dtype,
-        ema_decay: Optional[bool],
+        ema_decay: bool | None,
         torch_compile: bool = False,  # giving some issues
     ):
         """Constructor."""
@@ -61,11 +60,11 @@ class DiffusionExperiment:
         self,
         dataloader: torch.utils.data.DataLoader,
         num_epochs: int,
-        eval_interval: Optional[int] = 10,
+        eval_interval: int | None = 10,
         eval_num: int = 100,
         eval_dir: str = "./outputs/reverse_diffusion",
         checkpoints_dir: str = "./outputs/checkpoints",
-        checkpoint_path: Optional[str] = None,
+        checkpoint_path: str | None = None,
     ):
         """Train loop."""
         os.makedirs(eval_dir, exist_ok=True)

@@ -1,11 +1,11 @@
 import math
-from typing import Callable, Iterable, Sequence, Union
+from collections.abc import Callable, Iterable, Sequence
 
 import torch
 
 
 def checkpoint(
-    func: Callable[..., Union[torch.Tensor, Sequence[torch.Tensor]]],
+    func: Callable[..., torch.Tensor | Sequence[torch.Tensor]],
     inputs: Sequence[torch.Tensor],
     params: Iterable[torch.Tensor],
     flag: bool,

@@ -1,7 +1,7 @@
 import os
 import shutil
 from argparse import ArgumentParser
-from typing import Dict, List, Optional, Sequence, Tuple
+from collections.abc import Sequence
 
 import numpy as np
 from utils import (
@@ -18,13 +18,13 @@ from utils import (
 def select_highest_score_images(
     dataset: Sequence[str],
     top_k: int = 25,
-    chunk_size: Optional[int] = None,
-    num_chunks: Optional[int] = None,
-    gaussian_blur_radius_list: Optional[Sequence[int]] = None,
+    chunk_size: int | None = None,
+    num_chunks: int | None = None,
+    gaussian_blur_radius_list: Sequence[int] | None = None,
     min_contour_area: int = 100,
-    black_mask: Tuple[int, int, int, int] = (5, 10, 5, 0),
+    black_mask: tuple[int, int, int, int] = (5, 10, 5, 0),
     visualize_processing: bool = False,
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """Selects the top k images with the highest score from the dataset.
 
     # TODO: possible to create a multiprocessing pool to calculate scores for each image (agains all the rest in chunk)
@@ -48,12 +48,12 @@ def select_highest_score_images(
     if num_chunks is not None:
         dataset_chunks = dataset_chunks[:num_chunks]
 
-    img_scores: Dict[str, float] = {}
+    img_scores: dict[str, float] = {}
 
     # compare each image in the chunk with each other to calculate its total score (O(n^2) :( )
     for chunk_idx, chunk in enumerate(dataset_chunks):
         for img_idx, img1 in enumerate(chunk):
-            chunk_img1_scores: List[float] = []
+            chunk_img1_scores: list[float] = []
 
             # load img1 preprocesses it to input representation (grayscale, 480x640, uint8, [0,255])
             img1_prep = load_image_preprocess(img1)

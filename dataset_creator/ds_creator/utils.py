@@ -2,8 +2,8 @@ import glob
 import os
 import shutil
 import textwrap
+from collections.abc import Sequence
 from itertools import chain
-from typing import Sequence
 
 import cv2
 import matplotlib

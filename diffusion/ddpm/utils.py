@@ -2,7 +2,6 @@
 
 import os
 import shutil
-from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -91,7 +90,7 @@ def project_pointcloud_to_bev_image(
     return image[..., None, :, :]  # add channel dim: B, C, H, W
 
 
-def prepare_vis_frames(frames: torch.Tensor, nrow: Optional[int] = 10, data_type: str = "img") -> np.ndarray:
+def prepare_vis_frames(frames: torch.Tensor, nrow: int | None = 10, data_type: str = "img") -> np.ndarray:
     """Prepares torch frames for visualization."""
     if data_type == "pcd":
         frames = project_pointcloud_to_bev_image(frames)

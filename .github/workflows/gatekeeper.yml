@@ -16,8 +16,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.10"]
+        os: [ubuntu-24.04]
+        python-version: ["3.12"]
 
     env:
       CHANGED_PYTHON_FILES: $(git diff --diff-filter=d --name-only origin/$GITHUB_BASE_REF origin/$GITHUB_HEAD_REF)

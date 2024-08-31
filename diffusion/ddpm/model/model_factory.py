@@ -1,5 +1,3 @@
-from typing import Optional
-
 import torch
 from torchinfo import summary
 
@@ -17,7 +15,7 @@ def get_model(
     class_cond: bool = True,
     dropout: float = 0.0,
     batch_size: int = 1,
-    context_dim: Optional[int] = None,
+    context_dim: int | None = None,
 ) -> torch.nn.Module:
     """Creates model based opn config, supports 2D image models as well as 3D pointcloud models."""
     # 2D models:

@@ -8,7 +8,11 @@
 # - xauth/X11
 # - miniconda
 
-FROM nvidia/cuda:12.6.0-cudnn-devel-ubuntu22.04
+FROM nvidia/cuda:12.6.0-cudnn-devel-ubuntu24.04
+
+# delete new default user which comes with ubuntu24
+# https://askubuntu.com/questions/1513927/ubuntu-24-04-docker-images-now-includes-user-ubuntu-with-uid-gid-1000
+RUN userdel -r ubuntu
 
 ARG USER=user
 ENV UID=1000
@@ -83,10 +87,12 @@ RUN sudo apt-get update && sudo apt-get install -y \
     && sudo rm -rf /var/lib/apt/lists/* && sudo rm -rf /var/cache/apt && sudo apt-get clean
 
 # install python code checking/formatting/testing tools
-RUN pip3 install \
+RUN PIP_BREAK_SYSTEM_PACKAGES=1 pip3 install \
     ruff \
     pyupgrade \
     mypy \
+    ipython \
+    jupyter \
     sphinx \
     && sudo rm -rf /var/lib/apt/lists/* && sudo rm -rf /var/cache/apt && sudo apt-get clean
 
@@ -99,7 +105,6 @@ RUN sudo apt-get update && sudo apt-get install -y \
 # add GUI support using X11
 RUN sudo apt-get update && sudo apt-get install -y \
     xauth \
-    libgl1-mesa-glx \
     && sudo rm -rf /var/lib/apt/lists/* && sudo rm -rf /var/cache/apt && sudo apt-get clean
 
 # install oh-my-bash for a better shell
