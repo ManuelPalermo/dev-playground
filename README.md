@@ -7,7 +7,7 @@ Also includes some [experiments and results](#explored-topics).
 ## Features
 
 - Dockerfile:
-  - ubuntu22.04
+  - ubuntu24.04
   - nvidia-cuda12.6
   - cpp tools
   - python tools
@@ -18,13 +18,15 @@ Also includes some [experiments and results](#explored-topics).
   - gpu support
   - graphical interface support (X11)
   - host camera support
-- Python tool configs (linters, formatters)
 - Pre-commit hooks
-- Basic CI/CD (github actions) for python formatting/linting
+- Python tool configs (linters, formatters)
+- CI/CD (github actions) for formatting/linting
 
 ---
 
 ## Explored topics
+
+- **[devcontainer](.devcontainer/)**: containerized docker environment with dev tools and configs.
 
 - **[diffusion](./diffusion/README.md)**: data generation using DDPMs (conditional and unconditional generation).
 

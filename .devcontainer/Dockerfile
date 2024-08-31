@@ -1,6 +1,6 @@
 
 # After build contains:
-# - ubuntu22.04
+# - ubuntu24.04
 # - nvidia-cuda12.6
 # - cpp tools
 # - python tools
