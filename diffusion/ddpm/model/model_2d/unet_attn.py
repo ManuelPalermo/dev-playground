@@ -148,7 +148,7 @@ class ResidualBlock(nn.Module):
         dropout=0.1,
     ):
         """Constructor."""
-        super(ResidualBlock, self).__init__()
+        super().__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
 
@@ -212,7 +212,7 @@ class UNet(nn.Module):
         dropout=0.1,
     ):
         """Constructor."""
-        super(UNet, self).__init__()
+        super().__init__()
 
         self.sample_size = image_size
         self.in_channels = in_channels

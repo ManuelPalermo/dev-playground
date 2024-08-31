@@ -20,7 +20,7 @@ jobs:
         python-version: ["3.10"]
 
     env:
-      CHANGED_PYTHON_FILES: $(git diff --diff-filter=d --name-only origin/$GITHUB_BASE_REF origin/$GITHUB_HEAD_REF | grep ".py")
+      CHANGED_PYTHON_FILES: $(git diff --diff-filter=d --name-only origin/$GITHUB_BASE_REF origin/$GITHUB_HEAD_REF)
 
     steps:
       - name: Checkout branch
@@ -36,14 +36,11 @@ jobs:
       - name: Install SCA Python tools
         run: |
           pip install \
+              pre-commit \
               ruff \
+              pyupgrade \
               mypy
 
-      - name: "Check format: ruff"
-        run: python -m ruff format ${{env.CHANGED_PYTHON_FILES}}
-
-      - name: "Check SCA: ruff"
-        run: python -m ruff check ${{env.CHANGED_PYTHON_FILES}} --output-format=github
-
-      - name: "Check SCA: mypy"
-        run: python -m mypy ${{env.CHANGED_PYTHON_FILES}} --config="pyproject.toml"
+      - name: Run pre-commit SCA checks
+        run: |
+          pre-commit run --files ${{env.CHANGED_PYTHON_FILES}}

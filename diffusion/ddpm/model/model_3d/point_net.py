@@ -5,7 +5,7 @@ from torch.nn import Linear, Module, ModuleList
 
 class ConcatSquashLinear(Module):
     def __init__(self, dim_in, dim_out, dim_ctx):
-        super(ConcatSquashLinear, self).__init__()
+        super().__init__()
 
         self._layer = Linear(dim_in, dim_out)
         self._hyper_bias = Linear(dim_ctx, dim_out, bias=False)

@@ -23,7 +23,11 @@ extend-select = [
 ]
 
 ignore = [
-    "COM812", "ISC001"  # "Trailing comma missing"
+    "COM812", "ISC001",    # "Trailing comma missing"
+    "D100",                # Docstrings in public module
+    "D107",                # Missing docstring in `__init__`
+    "N812",                # Lowercase `functional` imported as non-lowercase `F
+
 ]
 
 [tool.ruff.lint.pydocstyle]

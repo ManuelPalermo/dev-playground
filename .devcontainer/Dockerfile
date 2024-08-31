@@ -85,6 +85,7 @@ RUN sudo apt-get update && sudo apt-get install -y \
 # install python code checking/formatting/testing tools
 RUN pip3 install \
     ruff \
+    pyupgrade \
     mypy \
     sphinx \
     && sudo rm -rf /var/lib/apt/lists/* && sudo rm -rf /var/cache/apt && sudo apt-get clean
