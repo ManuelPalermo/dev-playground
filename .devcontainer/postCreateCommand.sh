@@ -3,7 +3,7 @@
 set -eo pipefail
 
 HOME=/home/${USER}
-#WS_PATH="${HOME}/workspace"
+#WS_PATH="${HOME}/dev-playground"
 #cd "${WS_PATH}"
 #sudo chown -R "${USER}" "${HOME}"
 

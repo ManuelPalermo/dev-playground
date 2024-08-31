@@ -9,11 +9,12 @@ import supervision as sv
 import torch
 from autodistill.detection import CaptionOntology
 from autodistill_grounded_sam import GroundedSAM
-from ds_creator.semantic_dataset_creator import load_image
-from ds_creator.utils import glob_images
 from PIL import Image
 from tqdm import tqdm
 from transformers import pipeline
+
+from ds_creator.semantic_dataset_creator import load_image
+from ds_creator.utils import glob_images
 
 
 class AutoLabellerModel(abc.ABC):

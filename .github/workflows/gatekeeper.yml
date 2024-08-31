@@ -16,47 +16,31 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.10"]
+        os: [ubuntu-24.04]
+        python-version: ["3.12"]
 
     env:
-      CHANGED_PYTHON_FILES: $(git diff --diff-filter=d --name-only origin/$GITHUB_BASE_REF origin/$GITHUB_HEAD_REF | grep ".py")
+      CHANGED_PYTHON_FILES: $(git diff --diff-filter=d --name-only origin/$GITHUB_BASE_REF origin/$GITHUB_HEAD_REF)
 
     steps:
       - name: Checkout branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up Python (${{ matrix.python-version }})
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install SCA Python tools
         run: |
           pip install \
-              black \
-              isort \
-              pydocstyle \
-              flake8 \
-              mypy \
-              pylint
+              pre-commit \
+              ruff \
+              pyupgrade \
+              mypy
 
-      - name: "Check SCA: black"
-        run: python -m black ${{env.CHANGED_PYTHON_FILES}} --check --config="pyproject.toml"
-
-      - name: "Check SCA: isort"
-        run: python -m isort ${{env.CHANGED_PYTHON_FILES}} --check-only --settings-path="pyproject.toml"
-
-      - name: "Check SCA: flake8"
-        run: python -m flake8 ${{env.CHANGED_PYTHON_FILES}} --count --config="setup.cfg"
-
-      - name: "Check SCA: pylint"
-        run: python -m pylint ${{env.CHANGED_PYTHON_FILES}} --recursive "y" --rcfile="pyproject.toml"
-
-      - name: "Check SCA: mypy"
-        run: python -m mypy ${{env.CHANGED_PYTHON_FILES}} --config="pyproject.toml"
-
-      - name: "Check SCA: pydocstyle"
-        run: python -m pydocstyle ${{env.CHANGED_PYTHON_FILES}} --count --config="pyproject.toml"
+      - name: Run pre-commit SCA checks
+        run: |
+          pre-commit run --files ${{env.CHANGED_PYTHON_FILES}} --color="always"

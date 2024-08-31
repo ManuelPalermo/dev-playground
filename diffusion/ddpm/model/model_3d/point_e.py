@@ -1,11 +1,11 @@
 import math
-from typing import Callable, Iterable, Sequence, Union
+from collections.abc import Callable, Iterable, Sequence
 
 import torch
 
 
 def checkpoint(
-    func: Callable[..., Union[torch.Tensor, Sequence[torch.Tensor]]],
+    func: Callable[..., torch.Tensor | Sequence[torch.Tensor]],
     inputs: Sequence[torch.Tensor],
     params: Iterable[torch.Tensor],
     flag: bool,
@@ -24,8 +24,7 @@ def checkpoint(
     if flag:
         args = tuple(inputs) + tuple(params)
         return CheckpointFunction.apply(func, len(inputs), *args)
-    else:
-        return func(*inputs)
+    return func(*inputs)
 
 
 class CheckpointFunction(torch.autograd.Function):
@@ -251,7 +250,6 @@ class PointDiffusionTransformer(torch.nn.Module):
         Returns:
             an [B x C' x N] tensor.
         """
-
         # assert x.shape[-1] == self.n_ctx
 
         t_emb = self.time_embed(timestep_embedding(ts, self.backbone.width))

@@ -2,8 +2,8 @@ import glob
 import os
 import shutil
 import textwrap
+from collections.abc import Sequence
 from itertools import chain
-from typing import Sequence
 
 import cv2
 import matplotlib
@@ -59,7 +59,6 @@ def clear_directory(directory: str, clear_search: bool = False, clear_patterns: 
 
 
 def draw_text_as_image(text: str, save_path: str, image_size=(128, 128)):
-
     # wrap text to max size
     paragraph = textwrap.wrap(text, width=image_size[0] // 6)
 
@@ -87,7 +86,6 @@ def save_images_in_grid(
     save_path: str,
     title: str | None,
 ) -> None:
-
     if isinstance(images_or_directory, str) and os.path.isdir(images_or_directory):
         images = glob_images(images_or_directory)
     else:

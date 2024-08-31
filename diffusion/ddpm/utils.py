@@ -2,15 +2,15 @@
 
 import os
 import shutil
-from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from ddpm.diffusion import GaussianDiffusion
 from torch.utils.data import DataLoader
 from torcheval.metrics.image.fid import FrechetInceptionDistance
 from torchvision.utils import make_grid
+
+from ddpm.diffusion import GaussianDiffusion
 
 try:
     from moviepy.editor import ImageSequenceClip
@@ -40,7 +40,6 @@ def project_pointcloud_to_bev_image(
     pcs: torch.Tensor, res: float = 0.01, space_m: tuple[float, ...] = (-0.75, 0.75)
 ) -> torch.Tensor:
     """Projects pointcloud xyz to BeV image."""
-
     B, C, _ = pcs.shape
 
     # assumes square region to project
@@ -91,7 +90,7 @@ def project_pointcloud_to_bev_image(
     return image[..., None, :, :]  # add channel dim: B, C, H, W
 
 
-def prepare_vis_frames(frames: torch.Tensor, nrow: Optional[int] = 10, data_type: str = "img") -> np.ndarray:
+def prepare_vis_frames(frames: torch.Tensor, nrow: int | None = 10, data_type: str = "img") -> np.ndarray:
     """Prepares torch frames for visualization."""
     if data_type == "pcd":
         frames = project_pointcloud_to_bev_image(frames)

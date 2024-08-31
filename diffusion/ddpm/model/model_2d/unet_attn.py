@@ -82,17 +82,15 @@ def get_downsample_layer(in_dim, hidden_dim, is_last):
             Rearrange("b c (h p1) (w p2) -> b (c p1 p2) h w", p1=2, p2=2),
             nn.Conv2d(in_dim * 4, hidden_dim, 1),
         )
-    else:
-        return nn.Conv2d(in_dim, hidden_dim, 3, padding=1)
+    return nn.Conv2d(in_dim, hidden_dim, 3, padding=1)
 
 
 def get_attn_layer(in_dim, is_last, use_linear_attn):
     if is_last:
         return Residual(PreNorm(in_dim, Attention(in_dim)))
-    elif use_linear_attn:
+    if use_linear_attn:
         return Residual(PreNorm(in_dim, LinearAttention(in_dim)))
-    else:
-        return nn.Identity()
+    return nn.Identity()
 
 
 def get_upsample_layer(in_dim, hidden_dim, is_last):
@@ -101,8 +99,7 @@ def get_upsample_layer(in_dim, hidden_dim, is_last):
             nn.Upsample(scale_factor=2, mode="nearest"),
             nn.Conv2d(in_dim, hidden_dim, 3, padding=1),
         )
-    else:
-        return nn.Conv2d(in_dim, hidden_dim, 3, padding=1)
+    return nn.Conv2d(in_dim, hidden_dim, 3, padding=1)
 
 
 def sinusoidal_embedding(timesteps, dim):
@@ -151,7 +148,7 @@ class ResidualBlock(nn.Module):
         dropout=0.1,
     ):
         """Constructor."""
-        super(ResidualBlock, self).__init__()
+        super().__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
 
@@ -215,7 +212,7 @@ class UNet(nn.Module):
         dropout=0.1,
     ):
         """Constructor."""
-        super(UNet, self).__init__()
+        super().__init__()
 
         self.sample_size = image_size
         self.in_channels = in_channels

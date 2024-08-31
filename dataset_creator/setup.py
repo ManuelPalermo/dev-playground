@@ -4,7 +4,7 @@ from setuptools import setup
 
 here = path.abspath(path.dirname(__file__))
 
-with open("README.md", "r", encoding="utf-8") as freadme:
+with open("README.md", encoding="utf-8") as freadme:
     long_description = freadme.read()
 
 setup(

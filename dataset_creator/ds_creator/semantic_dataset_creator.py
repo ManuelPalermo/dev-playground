@@ -6,10 +6,11 @@ from typing import Any
 
 import numpy as np
 import torch
-from ds_creator.clip_image_search import ClipModel
-from ds_creator.utils import draw_text_as_image, glob_images, load_image
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
+
+from ds_creator.clip_image_search import ClipModel
+from ds_creator.utils import draw_text_as_image, glob_images, load_image
 
 
 class SemanticDatasetCreator:
@@ -156,7 +157,7 @@ class SemanticDatasetCreator:
         for file_path in glob_images(directory):
             metadata_file = file_path.replace(".png", "_metadata.json")
             if os.path.isfile(metadata_file):
-                with open(metadata_file, "r", encoding="utf-8") as json_handle:
+                with open(metadata_file, encoding="utf-8") as json_handle:
                     embedding = np.array(json.load(json_handle)["embedding"], dtype=np.float32)
             else:
                 image = load_image(file_path)

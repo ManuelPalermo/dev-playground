@@ -5,7 +5,7 @@ from torch.nn import Linear, Module, ModuleList
 
 class ConcatSquashLinear(Module):
     def __init__(self, dim_in, dim_out, dim_ctx):
-        super(ConcatSquashLinear, self).__init__()
+        super().__init__()
 
         self._layer = Linear(dim_in, dim_out)
         self._hyper_bias = Linear(dim_ctx, dim_out, bias=False)
@@ -51,7 +51,6 @@ class PointwiseNet(Module):
             ts:  Time. (B, ).
             cls: Class. (B, ).
         """
-
         batch_size = x.size(0)
 
         ctx = ctx[:, None, :]  # (B, 1, F)
@@ -144,7 +143,6 @@ class PointNet(Module):
             ts:  Time. (B, ).
             cls: Class. (B, ).
         """
-
         x = x.permute((0, 2, 1))  # (B, D, N) -> (B, N, D)
 
         ctx = self.encoder(x)

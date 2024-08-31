@@ -1,12 +1,12 @@
 import os
-from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+from tqdm import tqdm
+
 from ddpm.diffusion import GaussianDiffusion
 from ddpm.utils import compute_fid_metric, log_forward_diffusion_examples, log_generation_examples
-from tqdm import tqdm
 
 
 class DiffusionExperiment:
@@ -24,7 +24,7 @@ class DiffusionExperiment:
         num_classes: int,
         device,
         dtype,
-        ema_decay: Optional[bool],
+        ema_decay: bool | None,
         torch_compile: bool = False,  # giving some issues
     ):
         """Constructor."""
@@ -60,11 +60,11 @@ class DiffusionExperiment:
         self,
         dataloader: torch.utils.data.DataLoader,
         num_epochs: int,
-        eval_interval: Optional[int] = 10,
+        eval_interval: int | None = 10,
         eval_num: int = 100,
         eval_dir: str = "./outputs/reverse_diffusion",
         checkpoints_dir: str = "./outputs/checkpoints",
-        checkpoint_path: Optional[str] = None,
+        checkpoint_path: str | None = None,
     ):
         """Train loop."""
         os.makedirs(eval_dir, exist_ok=True)
@@ -200,7 +200,7 @@ class DiffusionExperiment:
         outs: list[torch.Tensor] = []
 
         for time_step in tqdm(
-            iterable=reversed(range(0, self.timesteps)),
+            iterable=reversed(range(self.timesteps)),
             total=self.timesteps,
             dynamic_ncols=False,
             desc=f"Generating (n:{num}):: ",
@@ -211,7 +211,7 @@ class DiffusionExperiment:
 
             # try to condition generation of equaly number of samples for each class
             cls = torch.arange(self.num_classes, dtype=torch.long, device=self.device)
-            cls = cls.repeat_interleave((num // self.num_classes))
+            cls = cls.repeat_interleave(num // self.num_classes)
             cls = torch.nn.functional.pad(cls, pad=(0, num - len(cls)))
 
             predicted_noise = model(x, ts, cls)
@@ -259,7 +259,7 @@ class DiffusionExperiment:
         """Logs losses and metrics."""
         plt.figure(figsize=(8, 5))
         plt.plot(
-            list(range(0, len(epochs_loss_list))),
+            list(range(len(epochs_loss_list))),
             epochs_loss_list,
             label="Training Loss",
         )

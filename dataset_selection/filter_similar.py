@@ -1,7 +1,7 @@
 import os
 import shutil
 from argparse import ArgumentParser
-from typing import List, Optional, Sequence, Tuple
+from collections.abc import Sequence
 
 from utils import (
     compare_frames_change_detection,
@@ -17,13 +17,13 @@ from utils import (
 def filter_similar_images_in_dataset(  # noqa: C901
     dataset: Sequence[str],
     score_threshold: float = 100_000.0,
-    chunk_size: Optional[int] = None,
-    num_chunks: Optional[int] = None,
-    gaussian_blur_radius_list: Optional[Sequence[int]] = (13,),
+    chunk_size: int | None = None,
+    num_chunks: int | None = None,
+    gaussian_blur_radius_list: Sequence[int] | None = (13,),
     min_contour_area: int = 250,
-    black_mask: Tuple[int, int, int, int] = (5, 15, 5, 0),
+    black_mask: tuple[int, int, int, int] = (5, 15, 5, 0),
     visualize_processing: bool = False,
-) -> List[str]:
+) -> list[str]:
     """Selects the images which are different from the rest in the dataset.
 
     # TODO: possible to create a multiprocessing pool to calculate scores for each image (agains all the rest in chunk)
@@ -47,7 +47,7 @@ def filter_similar_images_in_dataset(  # noqa: C901
     if num_chunks is not None:
         dataset_chunks = dataset_chunks[:num_chunks]
 
-    imgs_to_remove: List[str] = []
+    imgs_to_remove: list[str] = []
 
     # compare each image in the chunk with each other to calculate its total score (O(n^2) :( )
     for chunk_idx, chunk in enumerate(dataset_chunks):
@@ -56,7 +56,7 @@ def filter_similar_images_in_dataset(  # noqa: C901
             if img1 in imgs_to_remove:
                 continue
 
-            removed_chunk: List[str] = []
+            removed_chunk: list[str] = []
 
             # load img1 preprocesses it to input representation (grayscale, 480x640, uint8, [0,255])
             img1_prep = load_image_preprocess(img1)
