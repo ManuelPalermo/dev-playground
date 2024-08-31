@@ -43,4 +43,4 @@ jobs:
 
       - name: Run pre-commit SCA checks
         run: |
-          pre-commit run --files ${{env.CHANGED_PYTHON_FILES}}
+          pre-commit run --files ${{env.CHANGED_PYTHON_FILES}} --color="always"
