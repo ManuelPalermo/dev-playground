@@ -1,6 +1,7 @@
 import io
 from functools import lru_cache
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,8 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# TODO: move this param to the interface
-CONVERSATION_HISTORY = 10
+HISTORY_LENGHT = 25
 
 BACKEND_MODELS = {
     "local_huggingface": SUPPORTED_LOCAL_MODELS,
@@ -45,25 +45,35 @@ async def chat_list_conversations_endpoint() -> list[str]:
     return sorted(conversations)
 
 
+@app.get("/chat_list_params")
+async def chat_list_params_endpoint() -> dict[str, Any]:
+    """List all existing conversations stored on disk."""
+    params = {
+        "history_lenght": HISTORY_LENGHT,
+        "backend_models": BACKEND_MODELS,
+    }
+    return params
+
+
 @lru_cache
 def get_local_huggingface_model(model_id: str = "llava-hf/llava-v1.6-mistral-7b-hf") -> OfflineHuggingFaceModel:
     """Load a local_huggingface model for offline inference."""
-    assert (
-        model_id in BACKEND_MODELS["local_huggingface"]
-    ), f"Got model_id ({model_id}) which is not in available options: {BACKEND_MODELS['local_huggingface']}"
+    assert model_id in BACKEND_MODELS["local_huggingface"], (
+        f"Got model_id ({model_id}) which is not in available options: {BACKEND_MODELS['local_huggingface']}"
+    )
     print(f"INFO: Loading Local Huggingface({model_id})")
 
-    return OfflineHuggingFaceModel(model_id=model_id, history_num_turns=CONVERSATION_HISTORY)
+    return OfflineHuggingFaceModel(model_id=model_id, history_num_turns=HISTORY_LENGHT)
 
 
 @lru_cache
 def get_openrouter_api_model(model_id: str = "mistralai/mistral-7b-instruct") -> OpenRouterClient:
     """Load an OpenRouter API model for inference."""
-    assert (
-        model_id in BACKEND_MODELS["openrouter_api"]
-    ), f"Got model_id ({model_id}) which is not in available options: {BACKEND_MODELS['openrouter_api']}"
+    assert model_id in BACKEND_MODELS["openrouter_api"], (
+        f"Got model_id ({model_id}) which is not in available options: {BACKEND_MODELS['openrouter_api']}"
+    )
     print(f"INFO: Loading OpenRouterClient({model_id})")
-    return OpenRouterClient(model_id=model_id, history_num_turns=CONVERSATION_HISTORY)
+    return OpenRouterClient(model_id=model_id, history_num_turns=HISTORY_LENGHT)
 
 
 @app.post("/chat_openrouter_api")
@@ -147,7 +157,7 @@ async def chat_local_huggingface_endpoint(
     )
 
 
-def query_llm(
+def query_llm(  # noqa: PLR0912
     model: LLMInterface,
     conversation_name: str,
     system_message: str,
@@ -199,7 +209,7 @@ def query_llm(
     print("\n-------------------------")
     print("INFO: Received input query:")
     print(f"      model:                {model.__class__.__name__}({model.model_id})")
-    print(f"      history len:          {len(model.history)//2}")
+    print(f"      history len:          {len(model.history) // 2}")
     print(f"      conversation_name:    {conversation_name}")
     print(f"      system_message:       {system_message}")
     print(f"      temperature:          {temperature}")
