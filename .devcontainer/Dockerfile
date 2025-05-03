@@ -96,6 +96,20 @@ RUN PIP_BREAK_SYSTEM_PACKAGES=1 pip3 install \
     sphinx \
     && sudo rm -rf /var/lib/apt/lists/* && sudo rm -rf /var/cache/apt && sudo apt-get clean
 
+
+# Install web libraries
+RUN sudo apt-get update && sudo apt-get install -y \
+    default-jdk \
+    libcurl4-openssl-dev \
+    libpq-dev \
+    libmcrypt-dev \
+    libpq5 \
+    curl \
+        && curl -fsSL https://deb.nodesource.com/setup_22.x | sudo bash - && sudo apt-get install -y nodejs \
+        && npm install -g npm@latest \
+    && sudo rm -rf /var/lib/apt/lists/* && sudo rm -rf /var/cache/apt && sudo apt-get clean
+
+
 # install shell code checking/formatting tools
 RUN sudo apt-get update && sudo apt-get install -y \
     shfmt \
