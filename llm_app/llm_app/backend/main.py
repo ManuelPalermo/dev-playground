@@ -1,7 +1,6 @@
 import io
 from functools import lru_cache
 from pathlib import Path
-from typing import Annotated
 
 from fastapi import FastAPI, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -49,9 +48,9 @@ async def chat_list_conversations_endpoint() -> list[str]:
 @lru_cache
 def get_local_huggingface_model(model_id: str = "llava-hf/llava-v1.6-mistral-7b-hf") -> OfflineHuggingFaceModel:
     """Load a local_huggingface model for offline inference."""
-    assert (
-        model_id in BACKEND_MODELS["local_huggingface"]
-    ), f"Got model_id ({model_id}) which is not in available options: {BACKEND_MODELS['local_huggingface']}"
+    assert model_id in BACKEND_MODELS["local_huggingface"], (
+        f"Got model_id ({model_id}) which is not in available options: {BACKEND_MODELS['local_huggingface']}"
+    )
     print(f"INFO: Loading Local Huggingface({model_id})")
 
     return OfflineHuggingFaceModel(model_id=model_id, history_num_turns=CONVERSATION_HISTORY)
@@ -60,9 +59,9 @@ def get_local_huggingface_model(model_id: str = "llava-hf/llava-v1.6-mistral-7b-
 @lru_cache
 def get_openrouter_api_model(model_id: str = "mistralai/mistral-7b-instruct") -> OpenRouterClient:
     """Load an OpenRouter API model for inference."""
-    assert (
-        model_id in BACKEND_MODELS["openrouter_api"]
-    ), f"Got model_id ({model_id}) which is not in available options: {BACKEND_MODELS['openrouter_api']}"
+    assert model_id in BACKEND_MODELS["openrouter_api"], (
+        f"Got model_id ({model_id}) which is not in available options: {BACKEND_MODELS['openrouter_api']}"
+    )
     print(f"INFO: Loading OpenRouterClient({model_id})")
     return OpenRouterClient(model_id=model_id, history_num_turns=CONVERSATION_HISTORY)
 
