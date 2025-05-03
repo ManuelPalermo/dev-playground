@@ -31,6 +31,12 @@ ignore = [
     "PLR0913",              # Too many arguments in function definition
     "FBT003",               # Boolean positional value in function call
     "S101",                 # Use of `assert` detected
+    "FA102",                # from __future__ import annotations missing for compatibility
+    "RET504",               # Unnecessary assignment to `inputs` before `return` statement
+    "D202",                 # No blank lines allowed after function docstring
+    "ERA001",               # Found commented-out code
+    "D104",                 # Missing docstring in public package
+    "EM102"                 # Exception must not use an f-string literal, assign to variable first
 ]
 
 [tool.ruff.lint.pydocstyle]
