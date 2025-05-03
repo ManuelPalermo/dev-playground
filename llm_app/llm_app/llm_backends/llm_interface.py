@@ -42,6 +42,9 @@ class LLMInterface:
     ) -> None:
         self.model_id = model_id
 
+        self.conversation_name: str | None = None
+        self.set_conversation_name(conversation_name)
+
         self.system_prompt: list[dict[str, Any]] = []
         if system_prompt is not None:
             self.set_system_prompt(system_prompt)
@@ -49,8 +52,6 @@ class LLMInterface:
         self.history_num_turns = history_num_turns
         self.history: list[dict[str, Any]] = []
         self.history_images: list[Image.Image | None] = []
-
-        self.conversation_name: str | None = conversation_name
 
     @abc.abstractmethod
     def __call__(
@@ -91,6 +92,7 @@ class LLMInterface:
     def reset_history(self) -> None:
         """Reset the conversation history."""
         print("INFO: clearing model history.")
+        self.system_prompt = []
         self.history = []
         self.history_images = []
 
@@ -113,7 +115,6 @@ class LLMInterface:
         """Sets a conversation name."""
         if self.conversation_name != conversation_name or conversation_name is None:
             self.reset_history()
-            self.reset_system_prompt()
 
         self.conversation_name = conversation_name
 
@@ -178,8 +179,8 @@ class LLMInterface:
             self.history_images = [None for _ in range(len(self.history))]
             img_dir = conversation_path / "images"
             for img_filename in Path(str(img_dir)).iterdir():
-                img = self.load_img(img_dir / img_filename)
-                img_idx = int(str(img_filename).replace(".png", ""))
+                img = self.load_img(img_filename)
+                img_idx = int(img_filename.stem.replace(".png", ""))
                 self.history_images[img_idx] = img
 
         print(f"INFO: Loaded conversation '{self.conversation_name}' from file: {history_file_chat}")

@@ -100,9 +100,12 @@ def main() -> None:
     """Main function to demonstrate the usage of a LLM api and debug things."""
 
     # small example of how to use a LLM model from a free LLM API:
+    conversation_name = "api_debug_history"
     api_model = OpenRouterClient(
         model_id="mistralai/mistral-7b-instruct",
         history_num_turns=5,
+        conversation_name=conversation_name,
+        system_prompt="Respond like a pirate who enjoys sea shanties a bit too much...",
     )
 
     api_model.set_system_prompt("Respond like a pirate who enjoys sea shanties a bit too much...")
@@ -136,12 +139,11 @@ def main() -> None:
 
     # save model history to disc and then load it
     print("\n--------------------")
-    conversation_name = "api_debug_history"
-    api_model.set_conversation_name(conversation_name)
     api_model.save_conversation(img_history=False, sys_prompt_history=True)
     api_model.reset_history()
     api_model.reset_system_prompt()
     api_model.load_conversation(conversation_name, img_history=False, sys_prompt_history=True)
+    print(api_model.show_history())
     # api_model.delete_conversation(conversation_name)
     print("---------//---------\n")
 

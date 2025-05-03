@@ -122,7 +122,7 @@ export default function ChatBubble({ role, content, image }) {
                     <img
                         src={URL.createObjectURL(image)}
                         alt="Uploaded content"
-                        className="max-w-full h-auto rounded-md mb-2"
+                        className="max-w-full h-auto max-h-64 rounded-md mb-2"
                     />
                 )}
                 {/* Add whitespace-pre-line here */}

@@ -163,14 +163,15 @@ class OfflineHuggingFaceModel(LLMInterface):
 def main() -> None:
     """Main function to demonstrate the usage of a offline LLM model and debug things."""
 
+    conversation_name = "local_debug_history"
     offline_model = OfflineHuggingFaceModel(
         model_id="llava-hf/llava-v1.6-mistral-7b-hf",
         # model_id="llava-hf/llava-1.5-7b-hf",
         device="cuda",
         history_num_turns=5,
+        conversation_name=conversation_name,
+        system_prompt="Respond like a pirate who enjoys sea shanties a bit too much...",
     )
-
-    offline_model.set_system_prompt("Respond like a pirate who enjoys sea shanties a bit too much...")
 
     # image description
     img_url = "https://cdn.pixabay.com/photo/2018/08/04/11/30/draw-3583548_1280.png"
@@ -220,12 +221,11 @@ def main() -> None:
 
     # save model history to disc and then load it
     print("\n--------------------")
-    conversation_name = "api_debug_history"
-    offline_model.set_conversation_name(conversation_name)
     offline_model.save_conversation(img_history=True, sys_prompt_history=True)
     offline_model.reset_history()
     offline_model.reset_system_prompt()
     offline_model.load_conversation(conversation_name, img_history=True, sys_prompt_history=True)
+    print(offline_model.show_history())
     # offline_model.delete_conversation(conversation_name)
     print("---------//---------\n")
 

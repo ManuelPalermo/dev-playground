@@ -43,7 +43,50 @@ export default function App() {
         fetch("http://localhost:8000/chat_list_conversations")
             .then((res) => res.json())
             .then((data) => setAvailableConversations(data))
-            .catch((err) => console.error("Failed to refresh conversations:", err));
+            .then(() => setChatHistory())
+            .catch((err) => console.info("Failed to refresh conversations:", err));
+    };
+
+    const setChatHistory = async () => {
+        try {
+            const response = await queryBackend("[HISTORY]")
+            const conversation_response = response["response"].split("]:")[1];
+
+            const pattern = /\{.*?\]\}/g; // Regex to match JSON-like objects from backend
+            const matches = Array.from(conversation_response.matchAll(pattern));
+
+            setSystemPrompt("");
+            setMessages([]);
+            setImage(null);
+            for (const line of matches) {
+                let raw_msg = line[0]
+                    .replace(/"/g, '”') // Replace double quotes with other symbol
+                    .replace(/'/g, '"') // Replace single quotes with double quotes (dict keys)
+                    .replace(/None/g, 'null'); // Replace Python's None with null
+
+                let parsedMsg = JSON.parse(raw_msg);
+                let role = parsedMsg["role"];
+                let text_content = parsedMsg["content"][0]["text"];
+
+                if (role === "system") {
+                    setSystemPrompt(text_content);
+                } else {
+                    let img = null;
+                    if (raw_msg.includes('{"type": "image"}')) {
+                        if (raw_msg.includes('{"type": "image"}')) {
+                            // TODO: correctly display image from history
+                        }
+                    }
+                    setImage(img);
+
+                    let out_msg = { "role": role, content: text_content, img };
+                    await setMessages((prev) => [...prev, out_msg]);
+                }
+            }
+
+        } catch (error) {
+            console.info("Failed to fetch and parse chat history:", error);
+        }
     };
 
     const handleReset = () => {
@@ -58,18 +101,12 @@ export default function App() {
         handleSend("[HISTORY]");
     };
 
-    const handleSend = async (text, options = {}) => {
+    const queryBackend = async (text, options = {}) => {
         const {
             overrideConversationName = conversationName,
             overrideSystemPrompt = systemPrompt,
             overrideModelId = selectedModel,
         } = options;
-
-        const newMsg = { role: "user", content: text, image };
-
-        if (text !== "[RESET]" && text !== "[HISTORY]" && text !== "[CONVERSATION]") {
-            setMessages((prev) => [...prev, newMsg]);
-        }
 
         const formData = new FormData();
         formData.append("conversation_name", overrideConversationName !== "anonymous" ? overrideConversationName : "");
@@ -91,31 +128,38 @@ export default function App() {
                 body: formData,
             });
 
-            const contentType = res.headers.get("content-type") || "";
-            if (!res.ok || !contentType.includes("application/json")) {
-                try {
-                    const errorText = await res.text();
-                    console.error("Bad response text:", errorText);
-                    throw new Error(`Bad response: ${res.status} - ${res.statusText}. Response: ${errorText.substring(0, 150)}...`);
-                } catch (txtError) {
-                    throw new Error(`Bad response: ${res.status} - ${res.statusText}. Failed to read response body.`);
-                }
-            }
-
+            if (!res.ok) { throw new Error(`HTTP error! status: ${res.status}`); }
             const data = await res.json();
+            return data;
 
-            if (!data?.response) {
-                // if debugging, then show empty response
-                // throw new Error("No 'response' field in response");
-                return
+        } catch (error) {
+            console.info("Error in queryBackend:", error);
+        }
+    }
+
+    const handleSend = async (text, options = {}) => {
+
+        try {
+            if (text !== "[RESET]" && text !== "[HISTORY]" && text !== "[CONVERSATION]") {
+                const newMsg = { role: "user", content: text, image };
+                setMessages((prev) => [...prev, newMsg]);
             }
+
+        } catch (error) {
+            console.info("ERROR setting message", error.message);
+        }
+
+
+        try {
+            const data = await queryBackend(text, options);
 
             setMessages((prev) => [
                 ...prev,
                 { role: "assistant", content: data.response },
             ]);
+
         } catch (error) {
-            console.error("ERROR sending message: ", error.message);
+            console.info("ERROR sending message: ", error.message);
             setMessages((prev) => [
                 ...prev,
                 {
@@ -161,13 +205,13 @@ export default function App() {
                                     setConversationName(name);
                                     setMessages([]);
                                     handleSend("[CONVERSATION]", { overrideConversationName: name });
-                                    refreshConversations();
+                                    await refreshConversations();
                                 }
                             } else {
                                 setConversationName(val);
                                 setMessages([]);
                                 handleSend("[CONVERSATION]", { overrideConversationName: val });
-                                refreshConversations();
+                                await refreshConversations();
                             }
                         }}
                         className="bg-gray-800 text-white rounded px-2 py-1"

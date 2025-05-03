@@ -48,9 +48,9 @@ async def chat_list_conversations_endpoint() -> list[str]:
 @lru_cache
 def get_local_huggingface_model(model_id: str = "llava-hf/llava-v1.6-mistral-7b-hf") -> OfflineHuggingFaceModel:
     """Load a local_huggingface model for offline inference."""
-    assert model_id in BACKEND_MODELS["local_huggingface"], (
-        f"Got model_id ({model_id}) which is not in available options: {BACKEND_MODELS['local_huggingface']}"
-    )
+    assert (
+        model_id in BACKEND_MODELS["local_huggingface"]
+    ), f"Got model_id ({model_id}) which is not in available options: {BACKEND_MODELS['local_huggingface']}"
     print(f"INFO: Loading Local Huggingface({model_id})")
 
     return OfflineHuggingFaceModel(model_id=model_id, history_num_turns=CONVERSATION_HISTORY)
@@ -59,9 +59,9 @@ def get_local_huggingface_model(model_id: str = "llava-hf/llava-v1.6-mistral-7b-
 @lru_cache
 def get_openrouter_api_model(model_id: str = "mistralai/mistral-7b-instruct") -> OpenRouterClient:
     """Load an OpenRouter API model for inference."""
-    assert model_id in BACKEND_MODELS["openrouter_api"], (
-        f"Got model_id ({model_id}) which is not in available options: {BACKEND_MODELS['openrouter_api']}"
-    )
+    assert (
+        model_id in BACKEND_MODELS["openrouter_api"]
+    ), f"Got model_id ({model_id}) which is not in available options: {BACKEND_MODELS['openrouter_api']}"
     print(f"INFO: Loading OpenRouterClient({model_id})")
     return OpenRouterClient(model_id=model_id, history_num_turns=CONVERSATION_HISTORY)
 
@@ -178,15 +178,17 @@ def query_llm(
 
     elif message == "[RESET]":
         model.reset_history()
-        model.reset_system_prompt()
         model.set_conversation_name(None)
         # response = {"response": "[Chat history has been reset!]"}
 
     elif message == "[HISTORY]":
+        if model.conversation_name:
+            model.load_conversation(model.conversation_name)
+            history = model.show_history()
+        else:
+            history = {}
         response = {
-            "response": (
-                f"[History (len={len(model.history) // 2} | max={model.history_num_turns})]:\n\n{model.show_history()}"
-            )
+            "response": (f"[History (len={len(model.history) // 2} | max={model.history_num_turns})]:\n\n{history}")
         }
 
     else:
@@ -197,6 +199,7 @@ def query_llm(
     print("\n-------------------------")
     print("INFO: Received input query:")
     print(f"      model:                {model.__class__.__name__}({model.model_id})")
+    print(f"      history len:          {len(model.history)//2}")
     print(f"      conversation_name:    {conversation_name}")
     print(f"      system_message:       {system_message}")
     print(f"      temperature:          {temperature}")
