@@ -1,0 +1,22 @@
+{
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2021": true
+  },
+  "extends": ["eslint:recommended", "plugin:react/recommended"],
+  "plugins": ["react"],
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "overrides": [
+    {
+      "files": ["vite.config.js", "postcss.config.js", "tailwind.config.js"],
+      "parserOptions": {
+        "sourceType": "module"
+      }
+    }
+  ]
+}

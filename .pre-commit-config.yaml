@@ -13,7 +13,7 @@ repos:
       - id: check-yaml
       - id: check-xml
       - id: check-json
-      - id: pretty-format-json
+      #- id: pretty-format-json (done by prettier hook below)
 
   # python hooks
   - repo: https://github.com/asottile/pyupgrade
@@ -47,3 +47,16 @@ repos:
         args: [--style=Google]
       - id: clang-tidy
       - id: include-what-you-use
+
+  # javascript and html hooks
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: "v3.0.0"
+    hooks:
+      - id: prettier
+        types_or: [javascript, html, css, json, yaml]
+
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: "v8.50.0"
+    hooks:
+      - id: eslint
+        args: ["--fix"]
