@@ -61,12 +61,16 @@ npm run dev
 
 <details>
 <summary> Interface </summary>
-  ![image](./resources/interface.png)
+
+![image](resources/interface.png)
+
 </details>
 
 <details>
 <summary> Text and Image inputs </summary>
-  ![image](./resources/interface_text_and_image.png)
+
+![image](resources/interface_text_and_image.png)
+
 </details>
 
 ---
