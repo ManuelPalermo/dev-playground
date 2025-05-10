@@ -16,8 +16,8 @@ from llm_app.llm_backends import (
     LLMInterface,
     OfflineHuggingFaceModel,
     OpenRouterClient,
+    RetrievalAugmentedGeneration,
 )
-from llm_app.llm_backends.rag import RetrievalAugmentedGeneration
 
 app = FastAPI()
 app.add_middleware(
