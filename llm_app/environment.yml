@@ -1,0 +1,31 @@
+name: env_llm_app
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - uvicorn
+  - fastapi
+  - httpx
+  - websockets
+  - transformers
+  - opencv
+  - pip
+  - pip:
+      - llama-cpp-python
+      - torch --index-url https://download.pytorch.org/whl/cu126
+      - torchvision  --index-url https://download.pytorch.org/whl/cu126
+      - torchaudio  --index-url https://download.pytorch.org/whl/cu126
+      - bitsandbytes
+      - accelerate
+      - sentencepiece
+      - langchain
+      - langchain-community
+      - faiss-cpu
+      - pypdf
+      - tiktoken
+      - python-multipart
+      - sentence-transformers
+      - docx2txt
+      - unstructured
+      - markdown

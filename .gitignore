@@ -159,8 +159,6 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-
-
 # others:
 .history/
 outputs/
@@ -168,3 +166,5 @@ logs/
 */data/
 tmp/
 temp/
+node_modules/
+llm_app/llm_app/.conversation_history

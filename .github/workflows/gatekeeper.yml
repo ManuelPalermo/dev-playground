@@ -18,9 +18,10 @@ jobs:
       matrix:
         os: [ubuntu-24.04]
         python-version: ["3.12"]
+        node-version: ["22.14.0"]
 
     env:
-      CHANGED_PYTHON_FILES: $(git diff --diff-filter=d --name-only origin/$GITHUB_BASE_REF origin/$GITHUB_HEAD_REF)
+      CHANGED_FILES: $(git diff --diff-filter=d --name-only origin/$GITHUB_BASE_REF origin/$GITHUB_HEAD_REF)
 
     steps:
       - name: Checkout branch
@@ -33,6 +34,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Set up Node (${{ matrix.python-version }})
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
       - name: Install SCA Python tools
         run: |
           pip install \
@@ -41,6 +47,13 @@ jobs:
               pyupgrade \
               mypy
 
+      - name: Install node/npm tools
+        run: |
+          sudo apt-get update && sudo apt-get install -y curl \
+            && curl -fsSL https://deb.nodesource.com/setup_22.x | sudo bash - && sudo apt-get install -y nodejs \
+            && npm install -g npm@latest \
+            && npm install @eslint/css eslint eslint-plugin-react eslint-plugin-json eslint-plugin-markdown eslint-plugin-css
+
       - name: Run pre-commit SCA checks
         run: |
-          pre-commit run --files ${{env.CHANGED_PYTHON_FILES}} --color="always"
+          pre-commit run --files ${{env.CHANGED_FILES}} --color="always"
