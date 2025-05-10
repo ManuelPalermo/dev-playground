@@ -11,7 +11,7 @@ import numpy as np
 import requests
 from PIL import Image
 
-LLM_CONVERSATION_STORE = f"{Path.home()}/dev-playground/llm_app/llm_app/.llm_conversation_history/"
+LLM_CONVERSATION_STORE = f"{Path.home()}/dev-playground/llm_app/llm_app/.conversation_history/"
 
 
 def download_image(img_url: Path | str, save_dir: Path | str) -> str:

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-export default function InputBar({ onSend, setImage, image }) {
+export default function InputBar({ onSend, setImage, image, conversationName }) {
     const [input, setInput] = useState("");
 
     const handleSubmit = () => {
@@ -36,31 +36,60 @@ export default function InputBar({ onSend, setImage, image }) {
 
     return (
         <div className="p-3 border-t flex items-end gap-5 bg-white dark:bg-gray-800">
-            {/* Image Upload */}
-            <label className="flex flex-col items-center text-sm text-gray-600 dark:text-gray-400">
-                <div className="cursor-pointer bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600">
-                    📷 Upload Image
-                </div>
-                {image && (
-                    <div className="mt-1 text-xs text-center max-w-[120px] truncate flex items-center gap-1">
-                        <span>{image.name}</span>
-                        <button
-                            onClick={(e) => { e.preventDefault(); handleRemoveImage(); }}
-                            className="text-red-500 hover:text-red-700"
-                            aria-label="Remove image"
-                        >
-                            &times;
-                        </button>
+
+            <div className="flex flex-col items-center text-sm text-gray-600 dark:text-gray-400">
+
+                {/* Image Upload */}
+                <label>
+                    <div className="cursor-pointer bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600">
+                        📷 Upload Image
                     </div>
-                )}
-                <input
-                    type="file"
-                    name="image_file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                />
-            </label>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setImage(e.target.files[0])}
+                        className="hidden"
+                    />
+                    {image && (
+                        <div className="mt-1 text-xs text-center max-w-[120px] truncate">
+                            {image.name}
+                        </div>
+                    )}
+                </label>
+
+                {/* TextFile Upload */}
+                <label className="mt-2">
+                    <div className="cursor-pointer bg-gray-200 dark:bg-gray-700 px-4 py-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600">
+                        📄 Upload File
+                    </div>
+                    <input
+                        type="file"
+                        accept=".txt,.pdf,.md,.docx,.csv,.html,.json"
+                        onChange={async (e) => {
+                            const file = e.target.files[0];
+                            if (!file) return;
+                            const formData = new FormData();
+                            formData.append("file", file);
+                            formData.append("conversation_name", conversationName);
+
+                            try {
+                                const res = await fetch("http://localhost:8000/upload_file_for_rag", {
+                                    method: "POST",
+                                    body: formData,
+                                });
+
+                                const result = await res.json();
+                                alert(`📎 ${result.status}! \n- filename: ${result.filename} \n- num chunks: ${result.chunks}`);
+                            } catch (err) {
+                                console.error("Upload error:", err);
+                                alert("Failed to upload file");
+                            }
+                        }}
+                        className="hidden"
+                    />
+                </label>
+            </div>
+
 
             {/* Text Input - textarea with native resize */}
             <textarea

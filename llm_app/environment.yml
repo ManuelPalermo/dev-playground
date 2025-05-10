@@ -19,3 +19,13 @@ dependencies:
       - bitsandbytes
       - accelerate
       - sentencepiece
+      - langchain
+      - langchain-community
+      - faiss-cpu
+      - pypdf
+      - tiktoken
+      - python-multipart
+      - sentence-transformers
+      - docx2txt
+      - unstructured
+      - markdown

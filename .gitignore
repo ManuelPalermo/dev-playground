@@ -167,4 +167,4 @@ logs/
 tmp/
 temp/
 node_modules/
-llm_app/llm_app/.llm_conversation_history
+llm_app/llm_app/.conversation_history

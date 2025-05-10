@@ -1,9 +1,11 @@
 import io
+import shutil
+import tempfile
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, Form, UploadFile
+from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 
@@ -15,6 +17,7 @@ from llm_app.llm_backends import (
     OfflineHuggingFaceModel,
     OpenRouterClient,
 )
+from llm_app.llm_backends.rag import RetrievalAugmentedGeneration
 
 app = FastAPI()
 app.add_middleware(
@@ -74,6 +77,52 @@ def get_openrouter_api_model(model_id: str = "mistralai/mistral-7b-instruct") ->
     )
     print(f"INFO: Loading OpenRouterClient({model_id})")
     return OpenRouterClient(model_id=model_id, history_num_turns=HISTORY_LENGHT)
+
+
+@lru_cache
+def get_rag_model(
+    embeddings_model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
+    top_k_results: int = 5,
+    similarity_score_threshold: float = 1.2,
+) -> RetrievalAugmentedGeneration:
+    """Load an OpenRouter API model for inference."""
+    return RetrievalAugmentedGeneration(
+        embeddings_model_name=embeddings_model_name,
+        top_k_results=top_k_results,
+        similarity_score_threshold=similarity_score_threshold,
+    )
+
+
+@app.post("/upload_file_for_rag")
+async def upload_file_for_rag_endpoint(
+    file: UploadFile = File(...),  # noqa: B008
+    conversation_name: str = Form(...),
+) -> dict[str, str | int]:
+    """Handles the upload of a file for a Retrieval-Augmented Generation (RAG) endpoint."""
+
+    rag = get_rag_model()
+
+    conversation_name = conversation_name or "Anonymous"
+    if file.filename is None:
+        return {"status": "No file to upload"}
+
+    # Save file to temp location
+    temp_dir = tempfile.mkdtemp()
+    file_path = Path(temp_dir) / file.filename
+    with file_path.open("wb") as f:
+        shutil.copyfileobj(file.file, f)
+
+    # ingest + index file
+    num_chunks = rag.ingest_and_index_file(
+        filepath=file_path,
+        namespace=conversation_name,
+        save_original_file=True,
+    )
+    return {
+        "status": "Uploaded",
+        "filename": file.filename,
+        "chunks": num_chunks,
+    }
 
 
 @app.post("/chat_openrouter_api")
@@ -136,6 +185,7 @@ async def chat_local_huggingface_endpoint(
         image_file: image prompt.
         temperature: sampling temperature.
         max_tokens: maximum number of tokens to generate.
+
     """
 
     model = get_local_huggingface_model(model_id)
@@ -169,6 +219,7 @@ def query_llm(  # noqa: PLR0912
     """Query the LLM model with a prompt and return the model's response."""
     response = {}
     message = message.strip()
+    context = ""
 
     # prepare system prompt if given
     if system_message:
@@ -202,7 +253,12 @@ def query_llm(  # noqa: PLR0912
         }
 
     else:
-        output = model(text=message, image=image, temperature=temperature, max_tokens=max_tokens)
+        # retrieve context using RAG and prepend it to the message
+        rag = get_rag_model()
+        context = rag.retrieve_context(query=message, namespace=conversation_name)
+        prompt = f"CONTEXT:\n{context}\n\nUSER:\n{message}" if context else message
+
+        output = model(text=prompt, image=image, temperature=temperature, max_tokens=max_tokens)
         response = {"response": output}
     # ------------------------------
 
@@ -214,6 +270,7 @@ def query_llm(  # noqa: PLR0912
     print(f"      system_message:       {system_message}")
     print(f"      temperature:          {temperature}")
     print(f"      max_tokens:           {max_tokens}")
+    print(f"      context:              {context}")
     print(f"      message:              {message}")
     if image is not None:
         print(f"      image:                shape: {image.size}")

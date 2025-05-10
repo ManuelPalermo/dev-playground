@@ -48,17 +48,17 @@ export default function App() {
     };
 
     const setChatHistory = async () => {
-        try {
-            const response = await queryBackend("[HISTORY]")
-            const conversation_response = response["response"].split("]:")[1];
+        const response = await queryBackend("[HISTORY]")
+        const conversation_response = response["response"].split("]:")[1];
 
-            const pattern = /\{.*?\]\}/g; // Regex to match JSON-like objects from backend
-            const matches = Array.from(conversation_response.matchAll(pattern));
+        const pattern = /\{.*?\]\}/g; // Regex to match JSON-like objects from backend
+        const matches = Array.from(conversation_response.matchAll(pattern));
 
-            setSystemPrompt("");
-            setMessages([]);
-            setImage(null);
-            for (const line of matches) {
+        setSystemPrompt("");
+        setMessages([]);
+        setImage(null);
+        for (const line of matches) {
+            try {
                 let raw_msg = line[0]
                     .replace(/"/g, '”') // Replace double quotes with other symbol
                     .replace(/'/g, '"') // Replace single quotes with double quotes (dict keys)
@@ -82,10 +82,11 @@ export default function App() {
                     let out_msg = { "role": role, content: text_content, img };
                     await setMessages((prev) => [...prev, out_msg]);
                 }
+            } catch (err) {
+                console.info("Failed to parse message:", line[0], "\nError:", err.message);
+                let out_msg = { "role": "assistant", content: "" };
+                await setMessages((prev) => [...prev, out_msg]);
             }
-
-        } catch (error) {
-            console.info("Failed to fetch and parse chat history:", error);
         }
     };
 
@@ -315,7 +316,7 @@ export default function App() {
                 />
             </div >
             <ChatBox messages={messages} />
-            <InputBar onSend={handleSend} image={image} setImage={setImage} />
+            <InputBar onSend={handleSend} image={image} setImage={setImage} conversationName={conversationName} />
         </div >
     );
 }
