@@ -60,16 +60,30 @@ npm run dev
 # Results
 
 <details>
-<summary> Interface </summary>
+<summary> Loading Screen </summary>
 
-![image](resources/interface.png)
+![image](resources/0.interface_login.png)
+
+</details>
+
+<details>
+<summary> Clean UI </summary>
+
+![image](resources/1.interface_clean.png)
 
 </details>
 
 <details>
 <summary> Text and Image inputs </summary>
 
-![image](resources/interface_text_and_image.png)
+![image](resources/2.interface_text_and_image.png)
+
+</details>
+
+<details>
+<summary> Backend database (history and RAG) </summary>
+
+![image](resources/3.interface_history_and_rag_database.png)
 
 </details>
 
