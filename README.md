@@ -11,6 +11,7 @@ Also includes some [experiments and results](#explored-topics).
   - nvidia-cuda12.6
   - cpp tools
   - python tools
+  - node/js tools
   - shell tools
   - xauth/X11
   - miniconda
@@ -20,6 +21,7 @@ Also includes some [experiments and results](#explored-topics).
   - host camera support
 - Pre-commit hooks
 - Python tool configs (linters, formatters)
+- Node/js tool configs (linters, formatters)
 - CI/CD (github actions) for formatting/linting
 
 ---
@@ -32,4 +34,6 @@ Also includes some [experiments and results](#explored-topics).
 
 - **[dataset_creator](./dataset_creator/README.md)**: CLIP based text and image search over an image directory and autolabeling using foundational models.
 
+- **[llm_app](./llm_app/README.md)**: LLMs + Retrieval Augmented Generation (RAG) with a Web chat interface (similar to openAI but worse).
+ 
 - **dataset_selection**: Selecting of most diverse images of a directory based on similarity algorithm (classical CV).

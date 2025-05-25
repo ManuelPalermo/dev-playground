@@ -201,8 +201,6 @@ class LLMInterface:
                 img_idx = int(img_filename.stem.replace(".png", ""))
                 self.history_images[img_idx] = img
 
-        print("debuggggg:", self.history_images)
-
         print(f"INFO: Loaded conversation '{self.conversation_name}' from file: {history_file_chat}")
         print(self.show_history())
         print("-----//-----")
