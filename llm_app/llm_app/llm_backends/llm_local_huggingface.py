@@ -82,15 +82,18 @@ class OfflineHuggingFaceModel(LLMInterface):
 
         messages = [*self.system_prompt, *self.history, user_msg]
 
-        # Prepare inputs
+        # prepare images
+        processed_img = None
+        input_images = self.get_list_img_in_history()
         if image is not None:
-            inputs = self.prepare_image_text_inputs(messages, image)
+            processed_img = self.load_img(image)
+            input_images.append(processed_img)
+
+        # Prepare model inputs
+        if input_images:
+            inputs = self.prepare_image_text_inputs(messages, input_images)
         else:
-            last_img = self.get_last_img_in_history()
-            if last_img is not None:
-                inputs = self.prepare_image_text_inputs(messages, last_img)
-            else:
-                inputs = self.prepare_text_only_inputs(messages)
+            inputs = self.prepare_text_only_inputs(messages)
 
         sample_params = (
             {
@@ -121,7 +124,7 @@ class OfflineHuggingFaceModel(LLMInterface):
         if self.history_num_turns > 0:
             self.history.append(user_msg)
             self.history.append({"role": "assistant", "content": [{"type": "text", "text": output.strip()}]})
-            self.history_images.append(image)
+            self.history_images.append(processed_img)
             self.history_images.append(None)  # assistant has no image output
 
             # Truncate history (keep last n turns (prompt + response)
@@ -144,17 +147,15 @@ class OfflineHuggingFaceModel(LLMInterface):
     def prepare_image_text_inputs(
         self,
         messages: list[dict[str, Any]],
-        image: str | Image.Image,
+        images: list[Image.Image],
     ) -> dict[str, torch.Tensor]:
         """Prepare inputs for image-text generation."""
-        # Get the last image for the current user message
-        image = self.load_img(image)
 
         # Use most recent image for generation
         prompt = self.processor.apply_chat_template(messages, add_generation_prompt=True)
 
         return self.processor(
-            images=image,
+            images=images,
             text=prompt,
             return_tensors="pt",
         ).to(self.device, torch.float16 if self.device == "cuda" else torch.float32)

@@ -60,16 +60,30 @@ npm run dev
 # Results
 
 <details>
-<summary> Interface </summary>
+<summary> Loading Screen </summary>
 
-![image](resources/interface.png)
+![image](resources/0.interface_login.png)
+
+</details>
+
+<details>
+<summary> Clean UI </summary>
+
+![image](resources/1.interface_clean.png)
 
 </details>
 
 <details>
 <summary> Text and Image inputs </summary>
 
-![image](resources/interface_text_and_image.png)
+![image](resources/2.interface_text_and_image.png)
+
+</details>
+
+<details>
+<summary> Backend database (history and RAG) </summary>
+
+![image](resources/3.interface_history_and_rag_database.png)
 
 </details>
 
@@ -83,6 +97,7 @@ npm run dev
   - for each query search, first search the web and download the first n pages
   - store the pages with the RAG embeddings database
   - pass additional context from downloaded pages to the LLM
+  - requires a first pass through the LLM to generate a good search test based on the prompt
 
 - [ ] Support Speech to text to Speech model and support voice input/outputs
   - Change front-end to enable voice/audio inputs
@@ -93,7 +108,6 @@ npm run dev
 - [ ] Real-time Streaming Responses using Websockets
 
 - [ ] Create docker compose image to run both frontend and backend and deploy it somewhere
-
-- [ ] Debug leftover issues in the frontend/backend communication
+  - pretty annoying to make docker-compose run inside a docker dev env.. easier with just standalone env
 
 # References

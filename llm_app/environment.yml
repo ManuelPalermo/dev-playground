@@ -21,6 +21,7 @@ dependencies:
       - sentencepiece
       - langchain
       - langchain-community
+      - langchain_huggingface
       - faiss-cpu
       - pypdf
       - tiktoken

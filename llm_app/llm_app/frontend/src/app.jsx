@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import ChatBox from "./components/ChatBox"; // Assuming ChatBox is correct
 import InputBar from "./components/InputBar"; // Assuming InputBar is correct
 
 const STATIC_MODELS = {
     "local_huggingface": [
-        "llava-hf/llava-1.5-7b-hf",           // faster but not good with tools
         "llava-hf/llava-v1.6-mistral-7b-hf",
+        "llava-hf/llava-1.5-7b-hf",           // faster but not good with RAG or chat
         // "Qwen/Qwen2-VL-7B-Instruct",         // not working very well with img
     ],
     "openrouter_api": [
@@ -19,6 +19,9 @@ const STATIC_MODELS = {
 
 
 export default function App() {
+    // loading screen
+    const [loading, setLoading] = useState(true);
+
     // handle conversations and history
     const [conversationName, setConversationName] = useState("");
     const [availableConversations, setAvailableConversations] = useState([]);
@@ -34,61 +37,55 @@ export default function App() {
     const [temperature, setTemperature] = useState(0.25);
     const [maxTokens, setMaxTokens] = useState(500);
 
-    useEffect(() => {
-        refreshConversations(); // Auto-refresh existing conversations on startup
-        handleSend("[RESET]");  // Auto-reset ongoing conversation on startup + load default backend model
-    }, []);
-
-    const refreshConversations = () => {
-        fetch("http://localhost:8000/chat_list_conversations")
-            .then((res) => res.json())
-            .then((data) => setAvailableConversations(data))
-            .then(() => setChatHistory())
-            .catch((err) => console.info("Failed to refresh conversations:", err));
+    const refreshConversations = async () => {
+        try {
+            const res = await fetch("http://localhost:8000/chat_list_conversations");
+            const data = await res.json();
+            setAvailableConversations(data);
+            await setChatHistory();
+        } catch (err) {
+            console.info("Failed to refresh conversations:", err);
+        }
     };
 
     const setChatHistory = async () => {
-        const response = await queryBackend("[HISTORY]")
-        const conversation_response = response["response"].split("]:")[1];
-
-        const pattern = /\{.*?\]\}/g; // Regex to match JSON-like objects from backend
-        const matches = Array.from(conversation_response.matchAll(pattern));
+        const responses = await queryBackend("[HISTORY]");
+        const listMessages = responses["response"]
 
         setSystemPrompt("");
         setMessages([]);
         setImage(null);
-        for (const line of matches) {
-            try {
-                let raw_msg = line[0]
-                    .replace(/"/g, '”') // Replace double quotes with other symbol
-                    .replace(/'/g, '"') // Replace single quotes with double quotes (dict keys)
-                    .replace(/None/g, 'null'); // Replace Python's None with null
 
-                let parsedMsg = JSON.parse(raw_msg);
-                let role = parsedMsg["role"];
-                let text_content = parsedMsg["content"][0]["text"];
+        for (const parsedMsg of listMessages) {
+
+            if (!parsedMsg || !parsedMsg.role || !parsedMsg.content) {
+                console.warn("Skipped bad message:", raw_msg);
+                continue;
+            }
+
+            try {
+                const role = parsedMsg.role;
+                const contentArr = parsedMsg.content;
+                const text_content = contentArr.find(c => c.type === "text")?.text || "";
+                const hasImage = contentArr.some(c => c.type === "image");
+
+                let out_msg = { role, content: text_content };
+                if (hasImage) {
+                    out_msg = { role, content: "[🖼️] " + text_content };
+                }
 
                 if (role === "system") {
                     setSystemPrompt(text_content);
                 } else {
-                    let img = null;
-                    if (raw_msg.includes('{"type": "image"}')) {
-                        if (raw_msg.includes('{"type": "image"}')) {
-                            // TODO: correctly display image from history
-                        }
-                    }
-                    setImage(img);
-
-                    let out_msg = { "role": role, content: text_content, img };
-                    await setMessages((prev) => [...prev, out_msg]);
+                    setMessages(prev => [...prev, out_msg]);
                 }
+
             } catch (err) {
-                console.info("Failed to parse message:", line[0], "\nError:", err.message);
-                let out_msg = { "role": "assistant", content: "" };
-                await setMessages((prev) => [...prev, out_msg]);
+                console.error("Error rendering message:", err);
             }
         }
     };
+
 
     const handleReset = () => {
         setSystemPrompt("");
@@ -96,6 +93,7 @@ export default function App() {
         setImage(null);
         handleSend("[RESET]");
         refreshConversations();
+        setConversationName("")
     };
 
     const handleHistory = () => {
@@ -145,11 +143,9 @@ export default function App() {
                 const newMsg = { role: "user", content: text, image };
                 setMessages((prev) => [...prev, newMsg]);
             }
-
         } catch (error) {
             console.info("ERROR setting message", error.message);
         }
-
 
         try {
             const data = await queryBackend(text, options);
@@ -173,10 +169,68 @@ export default function App() {
         }
     };
 
+
+    useEffect(() => {
+        const initApp = async () => {
+            try {
+                await refreshConversations();
+            } catch (e) {
+                console.error("App init failed:", e);
+            } finally {
+                setLoading(false);
+            }
+        };
+        initApp();
+    }, []);
+
+    // render loading screen while waiting for backend to load
+    if (loading) {
+        return (
+            <div className="flex flex-col justify-center items-center h-screen bg-black text-white text-xl">
+                <div className="flex gap-10">
+                    <div className="animate-spin border-4 border-white border-t-transparent rounded-full h-20 w-20"></div>
+                    <span>
+                        🧠 LLM Chat App is loading...
+                        <br></br>
+                        <i>
+                            <br></br> ... 🧙🏻‍♂️⏰ please wait while the backend wizards do their magic 🧙🏾‍♂️🦄
+                            <br></br> ... perhaps try to refresh the page from time to time to let them know you're waiting ...
+                            <br></br>
+                            <br></br> ... if its your first time running this thing, it might take a while to download all required artefacts,
+                            <br></br> especially if your internet packets come by carrier pigeon...
+                            <br></br>
+                            <br></br> ... meanwhile ponder about your life choices with this LLM-generated haiku about the app:
+
+                            <br></br>
+                            <br></br>❝❝❝ Screen holds frozen breath,
+                            <br></br>Code's deep flaws, a slow decay,
+                            <br></br>Patience wears so thin.
+                            <br></br>No worth found in this long wait,
+                            <br></br>Just errors and wasted time.
+                            <br></br>
+                            <br></br>Hours slowly crawl,
+                            <br></br>Hopes of function, now all gone,
+                            <br></br>Just a hollow shell.
+                            <br></br>Frustration builds, a rising tide,
+                            <br></br>This poor app, a broken dream.
+                            <br></br>
+                            <br></br>Cursor blinks and waits,
+                            <br></br>No clever thought, no swift reply,
+                            <br></br>Just a silent void.
+                            <br></br>A digital ghost it seems,
+                            <br></br>Forever stuck, forever slow. ❞❞❞
+                            <br></br>- Gemini Flash 2.5
+                        </i>
+                    </span>
+                </div>
+            </div>
+        );
+    }
+
+    // render default interface
     return (
         <div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-900 text-black dark:text-white">
             <header className="p-4 border-b border-gray-700 flex justify-between items-start flex-wrap gap-4 text-sm">
-
 
                 <div className="flex flex-col gap-1">
                     {/* App title */}
@@ -186,11 +240,8 @@ export default function App() {
                             <p className="text-xs text-gray-600 italic">
                                 The best shitty ChatGPT clone you'll find today 💩✨
                             </p>
-
                         </h1>
-
                     </div>
-
 
                     {/* Conversation Selector */}
                     <label className="text-xs text-gray-400">Conversation</label>
@@ -291,16 +342,9 @@ export default function App() {
                     >
                         Reset
                     </button>
-                    <button
-                        onClick={handleHistory}
-                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
-                    >
-                        History
-                    </button>
                 </div>
 
             </header >
-
 
             {/* System Prompt UI */}
             < div className="flex items-center gap-2 p-2 bg-gray-200 dark:bg-gray-800 border-b border-gray-700" >

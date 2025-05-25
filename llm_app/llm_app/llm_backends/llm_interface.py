@@ -64,16 +64,24 @@ class LLMInterface:
         """Run an LLM model with a given text and image (optional) query and get a response."""
         raise NotImplementedError
 
-    def load_img(self, img: str | Path | Image.Image) -> Image.Image:
+    def load_img(self, img: str | Path | Image.Image, max_size: int = 768) -> Image.Image:
         """Load image from path."""
         if isinstance(img, Image.Image):
-            return img
-
-        if "http" in str(img):
+            pil_img = img
+        elif "http" in str(img):
             img_path = download_image(str(img), self.LOCAL_IMG_STORE)
-            return Image.open(str(img_path)).convert("RGB")
+            pil_img = Image.open(str(img_path)).convert("RGB")
+        else:
+            pil_img = Image.open(str(img)).convert("RGB")
 
-        return Image.open(str(img)).convert("RGB")
+        # resize img to max
+        if pil_img.size[0] > max_size or pil_img.size[1] > max_size:
+            base_width = max_size
+            wpercent = base_width / float(pil_img.size[0])
+            hsize = int(float(pil_img.size[1]) * float(wpercent))
+            pil_img = pil_img.resize((base_width, hsize), Image.Resampling.LANCZOS)
+
+        return pil_img
 
     def get_last_img_in_history(self) -> Image.Image | None:
         """Get latest valid img from history."""
@@ -82,12 +90,22 @@ class LLMInterface:
                 return img
         return None
 
+    def get_list_img_in_history(self) -> list[Image.Image]:
+        """Get latest valid img from history."""
+        return [img for img in self.history_images if img is not None]
+
     def show_history(self) -> str:
-        """Returns the conversation history in a readable string."""
+        """Returns the conversation history as a readable string."""
         print("INFO: requested model history.")
         history = [*self.system_prompt, *self.history]
-        history_str = "\n\n".join([f"{hist}" for hist in history])
+        history_str = "\n".join([f"{hist}" for hist in history])
+        history_str += f"[History (len={len(self.history) // 2} | max={self.history_num_turns})]:\n\n{history_str}"
         return history_str
+
+    def get_history(self) -> list[dict[str, str]]:
+        """Returns the conversation history."""
+        print("INFO: requested model history.")
+        return [*self.system_prompt, *self.history]
 
     def reset_history(self) -> None:
         """Reset the conversation history."""
