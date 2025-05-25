@@ -94,5 +94,6 @@ npm run dev
 - [ ] Real-time Streaming Responses using Websockets
 
 - [ ] Create docker compose image to run both frontend and backend and deploy it somewhere
+  - pretty annoying to make docker-compose run inside a docker dev env.. easier with just standalone env
 
 # References
