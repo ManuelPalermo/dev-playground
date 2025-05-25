@@ -83,6 +83,7 @@ npm run dev
   - for each query search, first search the web and download the first n pages
   - store the pages with the RAG embeddings database
   - pass additional context from downloaded pages to the LLM
+  - requires a first pass through the LLM to generate a good search test based on the prompt
 
 - [ ] Support Speech to text to Speech model and support voice input/outputs
   - Change front-end to enable voice/audio inputs
@@ -93,7 +94,5 @@ npm run dev
 - [ ] Real-time Streaming Responses using Websockets
 
 - [ ] Create docker compose image to run both frontend and backend and deploy it somewhere
-
-- [ ] Debug leftover issues in the frontend/backend communication
 
 # References

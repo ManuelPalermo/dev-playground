@@ -1,6 +1,7 @@
 import io
 import shutil
 import tempfile
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from functools import lru_cache
 from pathlib import Path
@@ -22,10 +23,12 @@ from llm_app.llm_backends import (
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_: FastAPI) -> AsyncGenerator:
+    """Asynchronous generator invoked during the application's startup and shutdown events."""
     # Load the default LLM models on startup by default
-    get_openrouter_api_model()
-    get_local_huggingface_model()
+    # TODO: need to be shared cache across processes :(
+    # get_openrouter_api_model()
+    # get_local_huggingface_model()
     yield
 
 
@@ -72,9 +75,9 @@ async def chat_list_params_endpoint() -> dict[str, Any]:
 @lru_cache
 def get_local_huggingface_model(model_id: str = "llava-hf/llava-v1.6-mistral-7b-hf") -> OfflineHuggingFaceModel:
     """Load a local_huggingface model for offline inference."""
-    assert (
-        model_id in BACKEND_MODELS["local_huggingface"]
-    ), f"Got model_id ({model_id}) which is not in available options: {BACKEND_MODELS['local_huggingface']}"
+    assert model_id in BACKEND_MODELS["local_huggingface"], (
+        f"Got model_id ({model_id}) which is not in available options: {BACKEND_MODELS['local_huggingface']}"
+    )
     print(f"INFO: Loading Local Huggingface({model_id})")
 
     return OfflineHuggingFaceModel(model_id=model_id, history_num_turns=HISTORY_LENGHT)
@@ -83,9 +86,9 @@ def get_local_huggingface_model(model_id: str = "llava-hf/llava-v1.6-mistral-7b-
 @lru_cache
 def get_openrouter_api_model(model_id: str = "mistralai/mistral-7b-instruct") -> OpenRouterClient:
     """Load an OpenRouter API model for inference."""
-    assert (
-        model_id in BACKEND_MODELS["openrouter_api"]
-    ), f"Got model_id ({model_id}) which is not in available options: {BACKEND_MODELS['openrouter_api']}"
+    assert model_id in BACKEND_MODELS["openrouter_api"], (
+        f"Got model_id ({model_id}) which is not in available options: {BACKEND_MODELS['openrouter_api']}"
+    )
     print(f"INFO: Loading OpenRouterClient({model_id})")
     return OpenRouterClient(model_id=model_id, history_num_turns=HISTORY_LENGHT)
 
@@ -145,7 +148,7 @@ async def chat_openrouter_api_endpoint(
     image_file: UploadFile | None = None,
     temperature: float = Form(0.1),
     max_tokens: int = Form(500),
-) -> dict[str, str]:
+) -> dict[str, str | Any]:
     """Chat endpoint from an API LLM.
 
     Args:
@@ -185,7 +188,7 @@ async def chat_local_huggingface_endpoint(
     image_file: UploadFile | None = None,
     temperature: float = Form(0.1),
     max_tokens: int = Form(500),
-) -> dict[str, str]:
+) -> dict[str, str | Any]:
     """Chat endpoint from a local_huggingface LLM.
 
     Args:
@@ -226,9 +229,9 @@ def query_llm(  # noqa: PLR0912
     image: Image.Image | None = None,
     temperature: float = 0.1,
     max_tokens: int = 500,
-) -> dict[str, str]:
+) -> dict[str, str | Any]:
     """Query the LLM model with a prompt and return the model's response."""
-    response = {}
+    response: dict[str, str | Any] = {}
     message = message.strip()
     context = ""
 
@@ -250,18 +253,18 @@ def query_llm(  # noqa: PLR0912
 
     elif message == "[RESET]":
         model.reset_history()
+        if model.conversation_name:
+            model.delete_conversation(conversation_name=model.conversation_name)
         model.set_conversation_name(None)
+
         # response = {"response": "[Chat history has been reset!]"}
 
     elif message == "[HISTORY]":
+        history = []
         if model.conversation_name:
             model.load_conversation(model.conversation_name)
-            history = model.show_history()
-        else:
-            history = {}
-        response = {
-            "response": (f"[History (len={len(model.history) // 2} | max={model.history_num_turns})]:\n\n{history}")
-        }
+            history = model.get_history()
+        response = {"response": history}
 
     else:
         # retrieve context using RAG and prepend it to the message
