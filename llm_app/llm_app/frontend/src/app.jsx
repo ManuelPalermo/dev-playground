@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import ChatBox from "./components/ChatBox"; // Assuming ChatBox is correct
 import InputBar from "./components/InputBar"; // Assuming InputBar is correct
 
 const STATIC_MODELS = {
     "local_huggingface": [
-        "llava-hf/llava-1.5-7b-hf",           // faster but not good with tools
         "llava-hf/llava-v1.6-mistral-7b-hf",
+        "llava-hf/llava-1.5-7b-hf",           // faster but not good with RAG or chat
         // "Qwen/Qwen2-VL-7B-Instruct",         // not working very well with img
     ],
     "openrouter_api": [
@@ -19,6 +19,9 @@ const STATIC_MODELS = {
 
 
 export default function App() {
+    // loading screen
+    const [loading, setLoading] = useState(true);
+
     // handle conversations and history
     const [conversationName, setConversationName] = useState("");
     const [availableConversations, setAvailableConversations] = useState([]);
@@ -34,17 +37,17 @@ export default function App() {
     const [temperature, setTemperature] = useState(0.25);
     const [maxTokens, setMaxTokens] = useState(500);
 
-    useEffect(() => {
-        refreshConversations(); // Auto-refresh existing conversations on startup
-        handleSend("[RESET]");  // Auto-reset ongoing conversation on startup + load default backend model
-    }, []);
 
-    const refreshConversations = () => {
-        fetch("http://localhost:8000/chat_list_conversations")
-            .then((res) => res.json())
-            .then((data) => setAvailableConversations(data))
-            .then(() => setChatHistory())
-            .catch((err) => console.info("Failed to refresh conversations:", err));
+
+    const refreshConversations = async () => {
+        try {
+            const res = await fetch("http://localhost:8000/chat_list_conversations");
+            const data = await res.json();
+            setAvailableConversations(data);
+            await setChatHistory();
+        } catch (err) {
+            console.info("Failed to refresh conversations:", err);
+        }
     };
 
     const setChatHistory = async () => {
@@ -59,6 +62,7 @@ export default function App() {
         setImage(null);
         for (const line of matches) {
             try {
+                // TODO:properly parse all symbols instead of crashing
                 let raw_msg = line[0]
                     .replace(/"/g, '”') // Replace double quotes with other symbol
                     .replace(/'/g, '"') // Replace single quotes with double quotes (dict keys)
@@ -80,12 +84,12 @@ export default function App() {
                     setImage(img);
 
                     let out_msg = { "role": role, content: text_content, img };
-                    await setMessages((prev) => [...prev, out_msg]);
+                    setMessages((prev) => [...prev, out_msg]);
                 }
             } catch (err) {
                 console.info("Failed to parse message:", line[0], "\nError:", err.message);
                 let out_msg = { "role": "assistant", content: "" };
-                await setMessages((prev) => [...prev, out_msg]);
+                setMessages((prev) => [...prev, out_msg]);
             }
         }
     };
@@ -173,10 +177,35 @@ export default function App() {
         }
     };
 
+    // render loading screen at startup (wait for backend to load)
+    useEffect(() => {
+        const initApp = async () => {
+            try {
+                await refreshConversations();
+            } catch (e) {
+                console.error("App init failed:", e);
+            } finally {
+                setLoading(false);
+            }
+        };
+        initApp();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex flex-col justify-center items-center h-screen bg-black text-white text-xl">
+                <div className="flex items-center gap-4">
+                    <div className="animate-spin border-4 border-white border-t-transparent rounded-full h-10 w-10"></div>
+                    <span>Loading app... please wait</span>
+                </div>
+            </div>
+        );
+    }
+
+    // render default interface
     return (
         <div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-900 text-black dark:text-white">
             <header className="p-4 border-b border-gray-700 flex justify-between items-start flex-wrap gap-4 text-sm">
-
 
                 <div className="flex flex-col gap-1">
                     {/* App title */}
@@ -186,11 +215,8 @@ export default function App() {
                             <p className="text-xs text-gray-600 italic">
                                 The best shitty ChatGPT clone you'll find today 💩✨
                             </p>
-
                         </h1>
-
                     </div>
-
 
                     {/* Conversation Selector */}
                     <label className="text-xs text-gray-400">Conversation</label>
@@ -300,7 +326,6 @@ export default function App() {
                 </div>
 
             </header >
-
 
             {/* System Prompt UI */}
             < div className="flex items-center gap-2 p-2 bg-gray-200 dark:bg-gray-800 border-b border-gray-700" >

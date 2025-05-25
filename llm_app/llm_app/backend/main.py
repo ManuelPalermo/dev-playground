@@ -1,6 +1,7 @@
 import io
 import shutil
 import tempfile
+from contextlib import asynccontextmanager
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -19,7 +20,17 @@ from llm_app.llm_backends import (
     RetrievalAugmentedGeneration,
 )
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load the default LLM models on startup by default
+    get_openrouter_api_model()
+    get_local_huggingface_model()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5174"],
@@ -61,9 +72,9 @@ async def chat_list_params_endpoint() -> dict[str, Any]:
 @lru_cache
 def get_local_huggingface_model(model_id: str = "llava-hf/llava-v1.6-mistral-7b-hf") -> OfflineHuggingFaceModel:
     """Load a local_huggingface model for offline inference."""
-    assert model_id in BACKEND_MODELS["local_huggingface"], (
-        f"Got model_id ({model_id}) which is not in available options: {BACKEND_MODELS['local_huggingface']}"
-    )
+    assert (
+        model_id in BACKEND_MODELS["local_huggingface"]
+    ), f"Got model_id ({model_id}) which is not in available options: {BACKEND_MODELS['local_huggingface']}"
     print(f"INFO: Loading Local Huggingface({model_id})")
 
     return OfflineHuggingFaceModel(model_id=model_id, history_num_turns=HISTORY_LENGHT)
@@ -72,9 +83,9 @@ def get_local_huggingface_model(model_id: str = "llava-hf/llava-v1.6-mistral-7b-
 @lru_cache
 def get_openrouter_api_model(model_id: str = "mistralai/mistral-7b-instruct") -> OpenRouterClient:
     """Load an OpenRouter API model for inference."""
-    assert model_id in BACKEND_MODELS["openrouter_api"], (
-        f"Got model_id ({model_id}) which is not in available options: {BACKEND_MODELS['openrouter_api']}"
-    )
+    assert (
+        model_id in BACKEND_MODELS["openrouter_api"]
+    ), f"Got model_id ({model_id}) which is not in available options: {BACKEND_MODELS['openrouter_api']}"
     print(f"INFO: Loading OpenRouterClient({model_id})")
     return OpenRouterClient(model_id=model_id, history_num_turns=HISTORY_LENGHT)
 
