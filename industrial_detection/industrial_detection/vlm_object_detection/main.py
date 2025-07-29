@@ -35,7 +35,7 @@ def main() -> None:
     print("Time1:", time.perf_counter() - start1)
     save_image(
         img=draw_boxes(image, detections1),
-        output_path=input_image_path.replace("/resources/", "/outputs/").replace(".jpeg", "_objects.jpeg"),
+        output_path=input_image_path.replace("/resources/", "/results/").replace(".jpeg", "_objects.jpeg"),
     )
 
     # example 2) more abstract class definition
@@ -48,7 +48,7 @@ def main() -> None:
     print("Time2:", time.perf_counter() - start2)
     save_image(
         draw_boxes(image, detections2),
-        output_path=input_image_path.replace("/resources/", "/outputs/").replace(".jpeg", "_abstract.jpeg"),
+        output_path=input_image_path.replace("/resources/", "/results/").replace(".jpeg", "_abstract.jpeg"),
     )
 
     # example 3) very low confidence threshold for detections, but apply NMS on top to filter overlapping predictions
@@ -72,7 +72,7 @@ def main() -> None:
     print("Time3:", time.perf_counter() - start3)
     save_image(
         draw_boxes(image, detections3),
-        output_path=input_image_path.replace("/resources/", "/outputs/").replace(
+        output_path=input_image_path.replace("/resources/", "/results/").replace(
             ".jpeg", "_abstract_0.025_no_nms.jpeg"
         ),
     )
@@ -94,7 +94,7 @@ def main() -> None:
     print("Time4:", time.perf_counter() - start4)
     save_image(
         draw_boxes(image, detections4),
-        output_path=input_image_path.replace("/resources/", "/outputs/").replace(".jpeg", "_abstract_0.025_nms.jpeg"),
+        output_path=input_image_path.replace("/resources/", "/results/").replace(".jpeg", "_abstract_0.025_nms.jpeg"),
     )
 
 
