@@ -15,11 +15,11 @@ setup(
     long_description_content_type="text/markdown",
     author="ManuelPalermo",
     author_email="macpalermo@gmail.com",
-    url="https://github.com/ManuelPalermo/dev-playground/tree/main/dataset_creator",
+    url="https://github.com/ManuelPalermo/dev-playground/tree/main/llm_app",
     packages=["llm_app"],
     license="MIT",
     classifiers=[
-        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
