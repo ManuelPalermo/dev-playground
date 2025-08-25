@@ -40,6 +40,7 @@ ignore = [
     "FAST002",              # FastAPI dependency without `Annotated`
     "TRY003",               # Avoid specifying long messages outside the exception class
     "FBT002",               # Boolean default positional argument in function definition
+    "RUF015",               # Prefer `next(...)` over single element slice
 ]
 
 [tool.ruff.lint.pydocstyle]
