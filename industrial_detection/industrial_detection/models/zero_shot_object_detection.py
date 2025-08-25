@@ -30,6 +30,7 @@ class ZeroShotObjectDetection2D:
 
         Args:
             model_id: Model identifier.
+            device: Device to run the model on.
         """
         self.device = device
         self.processor = AutoProcessor.from_pretrained(model_id)
@@ -51,7 +52,7 @@ class ZeroShotObjectDetection2D:
         Args:
             image: Input image.
             prompts: List of text queries.
-            threshold: Confidence threshold.
+            confidence_treshold: Confidence threshold.
             apply_nms: Whether to apply Non-Maximum Suppression.
             nms_iou_threshold: IoU threshold for NMS.
             nms_class_wise: Whether to apply NMS class-wise.

@@ -5,7 +5,7 @@ from typing import Any, Literal, NamedTuple
 import numpy as np
 import onnxruntime
 
-from industrial_detection.picking_normals_angle.base_model import PerceptionBaseONNXModel
+from industrial_detection.models.base_model import PerceptionBaseONNXModel
 from industrial_detection.utils.image import draw_masks, load_image, resize_img, save_image
 
 """
@@ -237,7 +237,7 @@ class SAM2ImageDecoder(PerceptionBaseONNXModel):
         return {"masks": np.array(masks), "score": np.array(iou_predictions)}
 
     def _prepare_points(self, point_coords: np.ndarray, point_labels: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        assert point_coords.ndim == 2 and point_labels.ndim == 1, (  # noqa: PLR2004
+        assert point_coords.ndim == 2 and point_labels.ndim == 1, (  # noqa: PLR2004, PT018
             f"Got shapes: {point_coords.shape=} {point_labels.shape=}"
         )
         input_point_coords = point_coords[np.newaxis, ...]

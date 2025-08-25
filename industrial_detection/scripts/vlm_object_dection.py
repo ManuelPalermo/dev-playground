@@ -3,8 +3,8 @@ from pathlib import Path
 
 import torch
 
+from industrial_detection.models.zero_shot_object_detection import ZeroShotObjectDetection2D
 from industrial_detection.utils.image import draw_boxes, load_image, save_image
-from industrial_detection.vlm_object_detection.zero_shot_object_detection import ZeroShotObjectDetection2D
 
 
 # NOTE: add img input/output as script args for easier use (argparse or click library)

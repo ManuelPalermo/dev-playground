@@ -5,7 +5,7 @@ from typing import Literal
 import numpy as np
 import onnxruntime
 
-from industrial_detection.picking_normals_angle.base_model import PerceptionBaseONNXModel
+from industrial_detection.models.base_model import PerceptionBaseONNXModel
 from industrial_detection.utils.image import load_image, save_image
 
 """

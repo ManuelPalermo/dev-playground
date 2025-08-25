@@ -10,7 +10,7 @@ import onnxconverter_common
 import onnxruntime
 
 DEFAULT_MODEL_CACHE_PATH = (
-    f"{Path.home()}/dev-playground/industrial_detection/industrial_detection/picking_normals_angle/.cache_model/"
+    f"{Path.home()}/dev-playground/industrial_detection/industrial_detection/models/.cache_model/"
 )
 
 

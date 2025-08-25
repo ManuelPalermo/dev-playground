@@ -1,7 +1,11 @@
 
-# Description
+## Description
 
-# Setup
+Experiments on using Foundational models for industrial applications such as
+object detection, surface normal estimation and pick angle estimation, using
+pretrained SOTA vision-language models (VLMs) and depth estimation models.
+
+## Setup
 
 ```bash
 cd ~/dev-playground/industrial_detection/
@@ -11,15 +15,26 @@ conda env create -f environment.yml
 pip install -e .
 ```
 
+## Run scripts
+
+```bash
+cd ~/dev-playground/industrial_detection/
+conda activate env_industrial_det
+
+# run scripts
+python ./scripts/picking_normals.py
+python ./scripts/vlm_object_dection.py
+```
+
 ---
 
-# Results
+## Results
 
 ### Vision-Language Model (VLM) Object Detection
 
 ```bash
 cd industrial_detection/
-python industrial_detection/vlm_object_detection/main.py
+python ./scripts/vlm_object_dection.py
 ```
 
 ![image](./results/vlm_object_detection/VLM_Scenario_results.png)
@@ -47,7 +62,7 @@ NOTE: Detections from all strategies could be improved by defining and area of i
 
 ```bash
 cd industrial_detection/
-python industrial_detection/picking_normals_angle/main.py
+python ./scripts/picking_normals.py
 ```
 
 ![image](./results/picking_normals_angle/normals_picking_angle_scenario_results.png)
@@ -75,7 +90,7 @@ Potential improvements:
 - Improve runtime and VRAM requirements (~8Gb needed for all 3 DL models to fit on GPU)
 - cleanup codebase
 
-# References
+## References
 
 - [Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection](https://arxiv.org/pdf/2303.05499)
 - [Scaling Open-Vocabulary Object Detection](https://arxiv.org/pdf/2306.09683)

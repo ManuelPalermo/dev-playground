@@ -7,16 +7,19 @@ import numpy as np
 import torch
 
 from industrial_detection.definitions import Box2D
-from industrial_detection.picking_normals_angle.depth_estimation import (
+from industrial_detection.models.depth_estimation import (
     DEFAULT_DEPTH_MODEL,
     DepthONNXModel,
 )
-from industrial_detection.picking_normals_angle.semantic_segmentation import (
+from industrial_detection.models.semantic_segmentation import (
     DEFAULT_SEMSEG_DECODER,
     DEFAULT_SEMSEG_ENCODER,
     INPUT_SHAPE,
     SAM2Image,
     SAM2InputData,
+)
+from industrial_detection.models.zero_shot_object_detection import (
+    ZeroShotObjectDetection2D,
 )
 from industrial_detection.utils.geometric import calculate_normals_vector
 from industrial_detection.utils.image import (
@@ -28,9 +31,6 @@ from industrial_detection.utils.image import (
     normalize_img,
     resize_img,
     save_image,
-)
-from industrial_detection.vlm_object_detection.zero_shot_object_detection import (
-    ZeroShotObjectDetection2D,
 )
 
 
