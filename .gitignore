@@ -168,3 +168,5 @@ tmp/
 temp/
 node_modules/
 llm_app/llm_app/.conversation_history
+.cache_model/
+.model_cache/

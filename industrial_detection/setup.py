@@ -8,15 +8,15 @@ with Path("README.md").open(encoding="utf-8") as freadme:
     long_description = freadme.read()
 
 setup(
-    name="llm_app",
+    name="industrial_detection",
     version="0.1",
-    description="LLM chat app.",
+    description="Solving industrial detection tasks for pick and place robots in industrial settings.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="ManuelPalermo",
     author_email="macpalermo@gmail.com",
-    url="https://github.com/ManuelPalermo/dev-playground/tree/main/llm_app",
-    packages=["llm_app"],
+    url="https://github.com/ManuelPalermo/dev-playground/tree/main/industrial_detection",
+    packages=["industrial_detection"],
     license="MIT",
     classifiers=[
         "Programming Language :: Python :: 3.12",
