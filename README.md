@@ -34,6 +34,8 @@ Also includes some [experiments and results](#explored-topics).
 
 - **[dataset_creator](./dataset_creator/README.md)**: CLIP based text and image search over an image directory and autolabeling using foundational models.
 
+- **[traffic_detection](./traffic_detection/README.md)**: Traffic analysis using computer vision to detect, track and count vehicles from traffic cameras.
+
 - **[industrial_detection](./industrial_detection/README.md)**: Use pretrained models to solve industrial robot tasks.
 
 - **[llm_app](./llm_app/README.md)**: LLMs + Retrieval Augmented Generation (RAG) with a Web chat interface (similar to openAI but worse).

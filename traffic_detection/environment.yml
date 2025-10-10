@@ -1,0 +1,22 @@
+name: env_traffic_detection
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - transformers
+  - scipy
+  - numpy
+  - matplotlib
+  - shapely
+  - pytest
+  - pytest-cov
+  - pip
+  - pip:
+      - timm
+      - opencv-python
+      - torch --index-url https://download.pytorch.org/whl/cu126
+      - torchvision  --index-url https://download.pytorch.org/whl/cu126
+      - onnx
+      - onnxruntime-gpu
+      - onnxconverter_common

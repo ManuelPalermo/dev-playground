@@ -88,6 +88,7 @@ RUN sudo apt-get update && sudo apt-get install -y \
 
 # install python code checking/formatting/testing tools
 RUN PIP_BREAK_SYSTEM_PACKAGES=1 pip3 install \
+    uv \
     ruff \
     pyupgrade \
     mypy \
