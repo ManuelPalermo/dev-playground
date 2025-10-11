@@ -13,8 +13,10 @@ It contains the following features:
 - Track vehicles with a consistent id between frames. And support simple future state prediction based on tracking model.
 - Estimation of the real world velocity (km/h) of the vehicles based on perspective transform (from camera to bev) and tracking.
 
-![Inference video screenshot](./data/inference.png)
-[Inference video](./data/inference_video.mp4)
+<video
+  poster="./results/inference.png"
+  src="./results/inference_video.mp4">
+</video>
 
 ## Setup
 

@@ -4,7 +4,7 @@ import pytest
 import torch
 
 PROJECT_ROOT_FOLDER = Path(__file__).resolve().parent.parent
-PROJECT_RESOURCES_FOLDER = PROJECT_ROOT_FOLDER / "data"
+PROJECT_RESOURCES_FOLDER = PROJECT_ROOT_FOLDER / "resources"
 PROJECT_SCRIPTS_FOLDER = PROJECT_ROOT_FOLDER / "scripts"
 PROJECT_TESTS_FOLDER = Path(__file__).resolve().parent
 

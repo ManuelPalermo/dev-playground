@@ -238,7 +238,7 @@ def get_arguments() -> argparse.Namespace:
         type=str,
         required=False,
         help="source",
-        default="./data/Video.mp4",
+        default="./resources/Video.mp4",
     )  # file/folder, 0 for webcam
     parser.add_argument(
         "--device",
@@ -273,7 +273,7 @@ def get_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--visualize_frames",
         type=bool,
-        default=False,
+        default=True,
         help="if predictions of frames should be visualized in a window",
     )
     parser.add_argument(
