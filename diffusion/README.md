@@ -1,26 +1,9 @@
 
 # Description
 
-Experiments with Denoising Diffusion Probabilistic Models (DDPMs).
+Experiments with Denoising Diffusion Probabilistic Models (DDPMs) for 2D and 3D data generation.
 
-# Setup and usage
-
-```bash
-cd ./diffusion/
-# create conda environment
-conda env create -f environment.yml
-# install this pkg
-pip install -e .
-```
-
-```bash
-# then it should be possible to run existing scripts with configs (hydra confs based)
-python scripts/train.py --config-name "MNIST"
-```
-
-NOTE: check the `./config/` folder to see existing configs. Any param can also be overwritten from the cli.
-
-# Results
+## Results
 
 <details><summary> Overfitting on small Image dataset </summary>
 
@@ -87,9 +70,27 @@ Reverse Diffusion Examples:
 </details>
 
 <br>
+
+## Setup and usage
+
+```bash
+cd ./diffusion/
+# create conda environment
+conda env create -f environment.yml
+# install this pkg
+pip install -e .
+```
+
+```bash
+# then it should be possible to run existing scripts with configs (hydra confs based)
+python scripts/train.py --config-name "MNIST"
+```
+
+NOTE: check the `./config/` folder to see existing configs. Any param can also be overwritten from the cli.
+
 <br>
 
-# Ideas / TODOs
+## Ideas / TODOs
 
 - [x] add hydra conf
 - [x] conditional or unconditional generation
@@ -100,7 +101,7 @@ Reverse Diffusion Examples:
 - [ ] generation with CLIP guided diffusion (text based)
 - [ ] generation with per/ pixel/point conditioning (e.g. based on semseg masks - from GT or SAM)
 
-# Aknowledgments
+## Aknowledgments
 
 Based on projects from:
 

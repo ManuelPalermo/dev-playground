@@ -1,32 +1,9 @@
 
-## Description
+# Description
 
 Experiments on using Foundational models for industrial applications such as
 object detection, surface normal estimation and pick angle estimation, using
 pretrained SOTA vision-language models (VLMs) and depth estimation models.
-
-## Setup
-
-```bash
-cd ~/dev-playground/industrial_detection/
-# create conda environment
-conda env create -f environment.yml
-# install pkg
-pip install -e .
-```
-
-## Run scripts
-
-```bash
-cd ~/dev-playground/industrial_detection/
-conda activate env_industrial_det
-
-# run scripts
-python ./scripts/picking_normals.py
-python ./scripts/vlm_object_dection.py
-```
-
----
 
 ## Results
 
@@ -89,6 +66,27 @@ Potential improvements:
 - Tune params/queries for all models to reliably detect and segment correctly all boxes and surface estimation algorithm
 - Improve runtime and VRAM requirements (~8Gb needed for all 3 DL models to fit on GPU)
 - cleanup codebase
+
+## Setup
+
+```bash
+cd ~/dev-playground/industrial_detection/
+# create conda environment
+conda env create -f environment.yml
+# install pkg
+pip install -e .
+```
+
+## Run scripts
+
+```bash
+cd ~/dev-playground/industrial_detection/
+conda activate env_industrial_det
+
+# run scripts
+python ./scripts/picking_normals.py
+python ./scripts/vlm_object_dection.py
+```
 
 ## References
 

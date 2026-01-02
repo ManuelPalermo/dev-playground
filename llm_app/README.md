@@ -7,57 +7,18 @@ Features:
 
 - Support for Local (HuggingFace) or Remote (OpenRouter API) backends
 - Multiple models available for each Backend
-- Tune generation parameters (temperature, max tokens, etc..)
 - Text + Image input (local backend only)
-- System prompts to tune model output format
-- LLM with chat history
+- Document ingestion (.pdf, .txt, .docx, etc..) for Retrieval Augmented Generation (RAG) using Langchain + FAISS embeddings database
+- LLM with chat history awareness
 - Save/Load conversations or Anonymous chat
+- System prompts to tune model output format
+- Tune generation parameters (temperature, max tokens, etc..)
 - Chat with code highlights
-- Retrieval Augmented Generation (RAG) based on langchain + FAISS embeddings database
 - "nice" frontend interface
 
 ---
 
-# Setup
-
-```bash
-cd ~/dev-playground/llm_app/
-# create conda environment
-conda env create -f environment.yml
-# install backend pkgs
-pip install -e .
-
-# install frontend pkgs
-cd ~/dev-playground/llm_app/llm_app/frontend
-npm install
-```
-
----
-
-# Usage
-
-Open 2 terminals, one to run the llm backend service and another to run the frontend
-
-Run llm backend
-
-```bash
-# export OPENROUTER_API_KEY="<API_KEY>"   # NOTE: if you plan on using the OpenRouterAPI backend, then also export the API key:
-conda activate env_llm_app
-cd ~/dev-playground/llm_app/llm_app/backend
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-# your backend should now be running on https://localhost:8000
-# you can check the docs/swagger API on http://localhost:8000/docs
-```
-
-Run the frontend interface
-
-```bash
-cd ~/dev-playground/llm_app/llm_app/frontend
-npm run dev
-# your frontend should now be running on http://localhost:5174
-```
-
-# Results
+## Results
 
 <details>
 <summary> Loading Screen </summary>
@@ -81,15 +42,57 @@ npm run dev
 </details>
 
 <details>
+<summary> Text and code </summary>
+
+![image](resources/4.interface_text_and_code.png)
+
+</details>
+
+<details>
 <summary> Backend database (history and RAG) </summary>
 
 ![image](resources/3.interface_history_and_rag_database.png)
 
 </details>
 
----
+## Setup
 
-# Ideas / TODOs
+```bash
+cd ~/dev-playground/llm_app/
+# create conda environment
+conda env create -f environment.yml
+# install backend pkgs
+pip install -e .
+
+# install frontend pkgs
+cd ~/dev-playground/llm_app/llm_app/frontend
+npm install
+```
+
+## Usage
+
+Open 2 terminals, one to run the llm backend service and another to run the frontend
+
+Run llm backend
+
+```bash
+# export OPENROUTER_API_KEY="<API_KEY>"   # NOTE: if you plan on using the OpenRouterAPI backend, then also export the API key:
+conda activate env_llm_app
+cd ~/dev-playground/llm_app/llm_app/backend
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+# your backend should now be running on https://localhost:8000
+# you can check the docs/swagger API on http://localhost:8000/docs
+```
+
+Run the frontend interface
+
+```bash
+cd ~/dev-playground/llm_app/llm_app/frontend
+npm run dev
+# your frontend should now be running on http://localhost:5174
+```
+
+## Ideas / TODOs
 
 - [ ] Display in the frontend the sources used in RAG context
 
@@ -109,5 +112,3 @@ npm run dev
 
 - [ ] Create docker compose image to run both frontend and backend and deploy it somewhere
   - pretty annoying to make docker-compose run inside a docker dev env.. easier with just standalone env
-
-# References

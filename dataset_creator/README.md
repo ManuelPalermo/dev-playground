@@ -3,24 +3,7 @@
 
 Experiments with CLIP based image search for dataset creation and foundational models for image autolabeling
 
-# Setup and usage
-
-```bash
-cd ./dataset_creator/
-# create conda environment
-conda env create -f environment.yml
-# install this pkg
-pip install -e .
-```
-
-```bash
-# then it should be possible to run existing scripts
-python scripts/download_data.py
-python scripts/select_dataset.py
-python scripts/autolabel_dataset.py
-```
-
-# Results
+## Results
 
 <details><summary> Data Lake </summary>
 
@@ -73,7 +56,24 @@ python scripts/autolabel_dataset.py
 
 <br>
 
-# Ideas / TODOs
+## Setup and usage
+
+```bash
+cd ./dataset_creator/
+# create conda environment
+conda env create -f environment.yml
+# install this pkg
+pip install -e .
+```
+
+```bash
+# then it should be possible to run existing scripts
+python scripts/download_data.py
+python scripts/select_dataset.py
+python scripts/autolabel_dataset.py
+```
+
+## Ideas / TODOs
 
 - [x] script to download files from internet (Pixabay API)
 - [x] CLIP based image directory search
@@ -85,7 +85,7 @@ python scripts/autolabel_dataset.py
   - [x] BBox + InstanceSegmentation           (based on Grounding-Sam)
   - [x] Depth                                 (based on DepthAnything)
 
-# References
+## References
 
 - [CLIP: Learning Transferable Visual Models From Natural Language Supervision](https://arxiv.org/pdf/2103.00020.pdf)
 - [CoCa: Contrastive Captioners are Image-Text Foundation Models](https://arxiv.org/pdf/2205.01917.pdf)
